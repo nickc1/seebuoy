@@ -1,0 +1,19 @@
+site_name: seebuoy
+site_description: seebuoy, ocean data, wave data, python, buoy data
+
+nav:
+    - Home: index.md
+    - Data: data.md
+  
+
+theme:
+  name: 'material'
+  palette:
+    primary: 'light-blue'
+    accent: 'amber'
+  logo: 'img/icon-white.png'
+  favicon: 'img/favicon.png'
+
+repo_name: nickc1/seebuoy
+repo_url: https://github.com/nickc1/seebuoy
+edit_uri: ''
