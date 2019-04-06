@@ -9,10 +9,11 @@ author-email = "nickcortale@gmail.com"
 home-page = "https://github.com/nickc1/seebuoy"
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Development Status :: 1 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Data :: Buoy :: Oceanography",
+    "Topic :: Scientific/Engineering",
+    
 ]
 requires = [
     "pandas",
