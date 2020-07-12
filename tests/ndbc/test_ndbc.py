@@ -1,9 +1,9 @@
-from seebuoy.ndbc.real_time import buoy_data
+from seebuoy import ndbc
 
 
 def test_buoy_data():
     datasets = [
-        "dataspec",
+        "data_spec",
         "ocean",
         "spec",
         "supl",
@@ -15,7 +15,7 @@ def test_buoy_data():
     ]
     buoy = 41013
 
-    for d in data:
-        df = buoy_data(buoy, d)   
+    for d in datasets:
+        df = ndbc(buoy, d)
 
 
