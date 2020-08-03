@@ -1,3 +1,4 @@
+import pandas as pd
 from seebuoy import ndbc
 
 
@@ -17,4 +18,6 @@ def test_buoy_data():
 
     for d in datasets:
         df = ndbc(buoy, d)
-        assert len(df) > 0
+        # should return a df or None
+        dtype = type(df)
+        assert dtype == pd.core.frame.DataFrame or df is None
