@@ -1,3 +1,7 @@
+import pandas as pd
+import urllib2
+
+
 class Historic:
     def __init__(self, buoy, year, year_range=None):
 
@@ -137,7 +141,7 @@ class Historic:
                 urllib2.urlopen(link)
                 links.append(link)
 
-            except:
+            except IndexError:
                 print(str(ii) + " not in records")
 
         # need to also retrieve jan, feb, march, etc.
@@ -167,7 +171,7 @@ class Historic:
                 urllib2.urlopen(link)
                 links.append(link)
 
-            except:
+            except IndexError:
                 print(str(month[ii]) + "2016" + " not in records")
                 print(link)
 

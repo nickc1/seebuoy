@@ -6,12 +6,12 @@ import netCDF4
 
 class WW3:
     """Pull wave watch 3 model data in Pandas dataframes.
-    
+
     Parameters
     ----------
     date : str
         Date of data to pull. If None, it will return the most recent
-    
+
     """
 
     def __init__(self, date=None):
@@ -31,33 +31,33 @@ class WW3:
 
     def get_var(self, var):
         """Get the specified variable from the netcdf file.
-         
+
         dirpwsfc - primary wave direction [deg]
-    
+
         dirswsfc - secondary wave direction [deg]
-    
+
         htsgwsfc- significant height of combined wind waves and swell [m]
-    
+
         perpwsfc - primary wave mean period [s]
-    
+
         perswsfc - secondary wave mean period [s]
-    
+
         ugrdsfc - u-component of wind [m/s]
-    
+
         vgrdsfc - v-component of wind [m/s]
-    
+
         wdirsfc - wind direction (from which blowing) [deg]
-    
+
         windsfc - wind speed [m/s]
-    
+
         wvdirsfc - direction of wind waves [deg]
-    
-        wvpersfc - mean period of wind waves [s] 
+
+        wvpersfc - mean period of wind waves [s]
         Parameters
         ----------
         var : str
             Variable from the netcdf file to retreive.
-        
+
         Returns
         -------
         x : np.array
@@ -68,7 +68,7 @@ class WW3:
 
     def get_closest_lat_lon(self, lat, lon):
         """Retrieves the indexes of the closest latitude and longitude.
-        
+
         Parameters
         ----------
         lat : float
@@ -118,7 +118,7 @@ class WW3:
             Latitude to retrieve for the data
         lon : float
             Longitude to retrieve for the data
-        
+
         Returns
         -------
         df : pd.DataFrame

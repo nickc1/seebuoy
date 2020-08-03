@@ -168,7 +168,7 @@ def _spec(txt):
         # convert to floats
         cols = ["WVHT", "SwH", "SwP", "WWH", "WWP", "APD", "MWD"]
         df[cols] = df[cols].astype(float)
-    except:
+    except IndexError:
 
         # convert the dates to datetimes
         df.index = pd.to_datetime(df.index, format="%Y %m %d %H %M")

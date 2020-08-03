@@ -17,5 +17,4 @@ def test_buoy_data():
 
     for d in datasets:
         df = ndbc(buoy, d)
-
-
+        assert len(df) > 0
