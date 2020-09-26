@@ -3,3 +3,6 @@ __pycache__/
 .vscode
 
 .DS_Store
+/dist
+*.egg
+*.egg-info
