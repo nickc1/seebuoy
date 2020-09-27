@@ -3,7 +3,9 @@ site_description: seebuoy, ocean data, wave data, python, buoy data
 
 nav:
     - Home: index.md
+    - Install: install.md
     - Data: data.md
+    
   
 
 theme:
@@ -17,3 +19,7 @@ theme:
 repo_name: nickc1/seebuoy
 repo_url: https://github.com/nickc1/seebuoy
 edit_uri: ''
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
