@@ -6,10 +6,6 @@
 <em>Easily access data from the National Data Buoy Center.</em>
 </p>
 
-<p align="center">
-<em>pip install seebuoy</em>
-</p>
-
 ---
 
 seebuoy dumps real time [NDBC](http://www.ndbc.noaa.gov) buoy data into [pandas](https://pandas.pydata.org/) dataframes. It's aim is to be easy to use:
