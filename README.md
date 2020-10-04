@@ -1,5 +1,3 @@
-https://raw.githubusercontent.com/nickc1/seebuoy/master/docs/img/icon-black.png
-
 # 
 <p align="center">
   <a href="#"><img src="https://raw.githubusercontent.com/nickc1/seebuoy/master/docs/img/seebuoy_logo_text.png" alt="seebuoy"></a>
@@ -77,8 +75,18 @@ To find the number of a buoy you can check the [ndbc](http://www.ndbc.noaa.gov) 
 </p>
 <p align="center">
 
+## Historical Data
+
+Historical data can be found at:
+
+https://www.ndbc.noaa.gov/station_history.php?station=41037
 
 
+## Installation
+
+```
+pip install seebuoy
+```
 
 
 

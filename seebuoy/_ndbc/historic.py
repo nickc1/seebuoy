@@ -1,5 +1,145 @@
+import requests
+from io import StringIO
 import pandas as pd
-import urllib2
+from bs4 import BeautifulSoup
+
+BASE_URL = "http://www.ndbc.noaa.gov/view_text_file.php?filename="
+
+
+def _get_all_urls(buoy):
+    """Scrape all the urls for the given buoy. Parses urls at:
+    
+    https://www.ndbc.noaa.gov/station_history.php?station=41037
+
+    and finds all the urls that refer to .txt files.
+    """
+
+    url = f"https://www.ndbc.noaa.gov/station_history.php?station={buoy}"
+
+    resp = requests.get(url)
+    print(resp.text)
+    soup = BeautifulSoup(resp.text)
+
+    uls = soup.find_all("ul")
+    data_links = []
+    for u in uls:
+        for link in u.find_all("a", href=True):
+            if ".txt" in link["href"]:
+                data_links.append(link["href"])
+
+    return data_links
+
+
+def available_downloads(data_links):
+    """Parse out what the urls actually denote. Date and data type.
+
+    Link examples:
+    ex1: /download_data.php?filename=41037h2016.txt.gz&dir=data/historical/stdmet/
+    ex2: /download_data.php?filename=4103772020.txt.gz&dir=data/stdmet/Jul/
+    ex3: /data/ocean/Aug/41037.txt
+    """
+    data_dict = []
+
+    for link in data_links:
+        # remove /historical so they are all the same
+        data_type = link.replace("/historical", "").split("data/")[-1].split("/")[0]
+
+        if "filename" in link:
+            year = link.split("filename=")[-1].split(".txt")[0][-4:]
+
+            if "historical" not in link:
+                month = link.split("/")[-2]
+            else:
+                month = ""
+
+        else:
+            # get max year from previously passed dates.
+            year = max([x["year"] for x in data_dict])
+            month = link.split("/")[3]
+
+        data_dict.append(
+            {"year": year, "month": month, "data_type": data_type, "url": link}
+        )
+    df = pd.DataFrame(data_dict)
+
+    # Those without a month are assigned Jan for datetime parsing
+    m = df["month"] == ""
+    df.loc[m, "month"] = "Jan"
+    df["date"] = pd.to_datetime(df[["year", "month"]].sum(axis=1), format="%Y%b")
+
+    return df.sort_values(['data_type', 'date'])
+
+
+def ndbc_historic(buoy, year, dataset="stdmet"):
+    """Get historical data.
+
+    Parameters
+    ----------
+    year: int or list of ints
+        Years to pull data. Can either be 2008 or [2008, 2009]
+    """
+
+    url = "{BASE_URL}{buoy}h{year}.txt.gz&dir=data/historical/{dataset}/"
+
+    opts = {
+        "stdmet": _stand_meteo,
+    }
+
+    if dataset not in opts:
+        raise ValueError("Dataset must be one of {}".format(", ".join(opts)))
+
+    if type(year) != list:
+        year = list(year)
+
+    for yr in year:
+        url = "{BASE_URL}{buoy}h{yr}.txt.gz&dir=data/historical/{dataset}/"
+        txt = _make_request(url)
+        opts["stdmet"]
+
+    if txt is None:
+        return
+
+    return opts[dataset](txt)
+
+
+def _stdmet(txt):
+
+    df = pd.read_csv(
+        StringIO(txt),
+        header=0,
+        delim_whitespace=True,
+        na_values=[99, 999, 9999, 99.0, 999.0, 9999.0],
+    )
+
+    # first row is units, so drop it. data after 2007 has units
+    if df.iloc[0, 0] == "#yr":
+        df = df.drop(df.index[0])
+
+    # data before 2007 does not always have minute
+    if "mm" in df.columns:
+        df["date"] = pd.to_datetime(df["YY", "MM", "DD", "hh", "mm"])
+    else:
+        df["date"] = pd.to_datetime(df["YY", "MM", "DD", "hh"])
+    df = df.set_index("date")
+
+    cols = [
+        "WDIR",
+        "WSPD",
+        "GST",
+        "WVHT",
+        "DPD",
+        "APD",
+        "MWD",
+        "PRES",
+        "ATMP",
+        "WTMP",
+        "DEWP",
+        "VIS",
+        "TIDE",
+    ]
+    df = df[cols].astype(float)
+
+    return df
 
 
 class Historic:
