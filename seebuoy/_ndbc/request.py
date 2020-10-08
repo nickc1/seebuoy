@@ -1,5 +1,6 @@
 import requests
 
+
 def _make_request(url):
 
     print(url)
