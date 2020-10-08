@@ -1,5 +1,6 @@
 import requests
 from io import StringIO
+import urllib2
 import pandas as pd
 from bs4 import BeautifulSoup
 from .request import _make_request
@@ -126,12 +127,12 @@ def _stdmet(txt):
 
     # data before 2007 does not always have minute
     if "mm" in df.columns:
-        res = df.iloc[:, :5].astype(str).agg('-'.join, axis=1)
-        df['date'] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
+        res = df.iloc[:, :5].astype(str).agg("-".join, axis=1)
+        df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
 
     else:
-        res = df.iloc[:, :4].agg('-'.join, axis=1)
-        df['date'] = pd.to_datetime(res, format="%Y-%m-%d-%H")
+        res = df.iloc[:, :4].agg("-".join, axis=1)
+        df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
 
     df = df.set_index("date")
 
