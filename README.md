@@ -81,6 +81,25 @@ Historical data can be found at:
 
 https://www.ndbc.noaa.gov/station_history.php?station=41037
 
+To get the available historical data for a buoy, you can run:
+
+```python
+df_avail = sb.available_downloads('41037')
+df_avail.head()
+```
+
+|    |   year | month   | dataset   | url                                                                      | date                |
+|---:|-------:|:--------|:----------|:-------------------------------------------------------------------------|:--------------------|
+| 31 |   2008 | Jan     | adcp      | /download_data.php?filename=41037a2008.txt.gz&dir=data/historical/adcp/  | 2008-01-01 00:00:00 |
+| 32 |   2009 | Jan     | ocean     | /download_data.php?filename=41037o2009.txt.gz&dir=data/historical/ocean/ | 2009-01-01 00:00:00 |
+| 33 |   2010 | Jan     | ocean     | /download_data.php?filename=41037o2010.txt.gz&dir=data/historical/ocean/ | 2010-01-01 00:00:00 |
+
+
+Then to retrieve the data:
+
+```python
+df = sb.ndbc_historic('41037', 2019)
+```
 
 ## Installation
 
