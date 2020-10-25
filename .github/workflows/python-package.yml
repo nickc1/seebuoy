@@ -58,5 +58,7 @@ jobs:
           python-version: 3.8
       - name: Install Poetry
         run: python -m pip install poetry
-      - name: Testing Upload
-        run: echo contents of dist are $(ls dist)
+      - name: Publish to pypi
+        run: poetry publish
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
