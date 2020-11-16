@@ -2,7 +2,7 @@ import pandas as pd
 from seebuoy import ndbc
 
 
-def test_buoy_data():
+def test_real_time():
     datasets = [
         "data_spec",
         "ocean",
@@ -17,7 +17,18 @@ def test_buoy_data():
     buoy = 41013
 
     for d in datasets:
-        df = ndbc(buoy, d)
+        df = ndbc.real_time(buoy, d)
         # should return a df or None
         dtype = type(df)
         assert dtype == pd.core.frame.DataFrame or df is None
+
+
+def test_available_downloads():
+
+    df = ndbc.available_datasets(41037)
+    assert len(df) > 0
+
+
+def test_historic():
+    df = ndbc.historic(41037, 2018, "stdmet")
+    assert len(df) > 0

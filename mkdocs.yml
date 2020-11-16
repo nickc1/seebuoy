@@ -3,10 +3,9 @@ site_description: seebuoy, ocean data, wave data, python, buoy data
 
 nav:
     - Home: index.md
+    - NDBC: ndbc.md
     - Install: install.md
-    - Data: data.md
-    
-  
+    - API: api.md
 
 theme:
   name: 'material'
@@ -15,6 +14,12 @@ theme:
     accent: 'amber'
   logo: 'img/icon-white.png'
   favicon: 'img/favicon.png'
+
+plugins:
+  - search
+  - mkdocstrings:
+      watch:
+        - seebuoy
 
 repo_name: nickc1/seebuoy
 repo_url: https://github.com/nickc1/seebuoy
