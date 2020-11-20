@@ -2,7 +2,7 @@ import requests
 from io import StringIO
 import pandas as pd
 from bs4 import BeautifulSoup
-from .request import _make_request
+from ._request import make_request
 
 BASE_URL = "http://www.ndbc.noaa.gov/view_text_file.php?filename="
 
@@ -17,9 +17,9 @@ def _get_all_urls(buoy):
 
     url = f"https://www.ndbc.noaa.gov/station_history.php?station={buoy}"
 
-    txt = _make_request(url)
+    txt = make_request(url)
 
-    soup = BeautifulSoup(txt)
+    soup = BeautifulSoup(txt, features="html.parser")
 
     urls = soup.find("ul").find_all("a", href=True)
     data_urls = []
@@ -30,19 +30,15 @@ def _get_all_urls(buoy):
     return data_urls
 
 
-def available_downloads(buoy):
-    """Parse out what the urls actually denote. Date and data type.
+def _parse_urls(data_urls):
+    """parses the urls returned from _get_all_urls"""
 
-    Link examples:
-    ex1: /download_data.php?filename=41037h2016.txt.gz&dir=data/historical/stdmet/
-    ex2: /download_data.php?filename=4103772020.txt.gz&dir=data/stdmet/Jul/
-    ex3: /data/ocean/Aug/41037.txt
-    """
-
-    data_urls = _get_all_urls(buoy)
-    data_dict = []
-
+    data = []
     for link in data_urls:
+        # some buoys have a climatic summary. For now, we ignore this.
+        if "climatic" in link:
+            continue
+
         # remove /historical so they are all the same
         dataset = link.replace("/historical", "").split("data/")[-1].split("/")[0]
 
@@ -56,13 +52,32 @@ def available_downloads(buoy):
 
         else:
             # get max year from previously passed dates.
-            year = max([x["year"] for x in data_dict])
+            year = max([x["year"] for x in data])
             month = link.split("/")[3]
 
-        data_dict.append(
-            {"year": year, "month": month, "dataset": dataset, "url": link}
-        )
-    df = pd.DataFrame(data_dict)
+        data.append({"year": year, "month": month, "dataset": dataset, "url": link})
+    return data
+
+
+def available_datasets(buoy):
+    """Parse out what the urls actually denote. Date and data type.
+
+    Link examples:
+
+    - ex1: /download_data.php?filename=41037h2016.txt.gz&dir=data/historical/stdmet/
+    - ex2: /download_data.php?filename=4103772020.txt.gz&dir=data/stdmet/Jul/
+    - ex3: /data/ocean/Aug/41037.txt
+
+    Args:
+        buoy (int): buoy id
+
+    Returns:
+        Dataframe of the available downloads
+    """
+
+    data_urls = _get_all_urls(buoy)
+    data = _parse_urls(data_urls)
+    df = pd.DataFrame(data)
 
     # Those without a month are assigned Jan for datetime parsing
     m = df["month"] == ""
@@ -72,16 +87,17 @@ def available_downloads(buoy):
     return df.sort_values(["dataset", "date"])
 
 
-def ndbc_historic(buoy, year, dataset="stdmet"):
-    """Get historical data.
+def historic(buoy, year, dataset="stdmet"):
+    """Retrieves historical data for the requested buoy, year, and dataset.
 
-    Parameters
-    ----------
-    year: int or list of ints
-        Years to pull data. Can either be 2008 or [2008, 2009]
+    Args:
+        buoy (int): Buoy Id
+        year (int): Years to pull data.
+        dataset (str): Which dataset to pull in. To see list of available
+            datasets, see ndbc.available_downloads
     """
 
-    df_avail = available_downloads(buoy)
+    df_avail = available_datasets(buoy)
 
     parsers = {
         "stdmet": _stdmet,
@@ -102,7 +118,7 @@ def ndbc_historic(buoy, year, dataset="stdmet"):
 
         qs = url.split("?")[-1]
         data_url = f"https://www.ndbc.noaa.gov/view_text_file.php?{qs}"
-        txt = _make_request(data_url)
+        txt = make_request(data_url)
 
         df = parsers[dataset](txt)
         df_store.append(df)
@@ -135,21 +151,5 @@ def _stdmet(txt):
 
     df = df.set_index("date")
 
-    # cols = [
-    #     "WDIR",
-    #     "WSPD",
-    #     "GST",
-    #     "WVHT",
-    #     "DPD",
-    #     "APD",
-    #     "MWD",
-    #     "PRES",
-    #     "ATMP",
-    #     "WTMP",
-    #     "DEWP",
-    #     "VIS",
-    #     "TIDE",
-    # ]
-    # df = df[cols].astype(float)
     df.columns = df.columns.str.lower()
     return df.astype(float)

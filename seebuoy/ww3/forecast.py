@@ -53,6 +53,7 @@ class WW3:
         wvdirsfc - direction of wind waves [deg]
 
         wvpersfc - mean period of wind waves [s]
+
         Parameters
         ----------
         var : str
