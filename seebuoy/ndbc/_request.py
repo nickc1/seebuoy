@@ -1,7 +1,7 @@
 import requests
 
 
-def _make_request(url):
+def make_request(url):
 
     print(url)
     resp = requests.get(url)

@@ -1,5 +1,7 @@
 # Install
 
+## pip
+
 seebuoy can be installed with pip:
 
 ```bash
