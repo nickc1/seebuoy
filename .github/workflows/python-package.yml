@@ -50,7 +50,7 @@ jobs:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       with:
-        args: deploy --dir=site
+        args: deploy --dir=site --prod
         secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
 
     - name: Upload Dist
