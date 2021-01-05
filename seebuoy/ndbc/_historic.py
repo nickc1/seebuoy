@@ -89,6 +89,10 @@ def available_datasets(buoy):
 
 def historic(buoy, year, dataset="stdmet"):
     """Retrieves historical data for the requested buoy, year, and dataset.
+    Need to cover both urls:
+
+    https://www.ndbc.noaa.gov/data/stdmet/Nov/41108.txt
+    https://www.ndbc.noaa.gov/view_text_file.php?filename=41108a2020.txt.gz&dir=data/stdmet/Oct/
 
     Args:
         buoy (int): Buoy Id
@@ -116,8 +120,12 @@ def historic(buoy, year, dataset="stdmet"):
     df_store = []
     for url in df_avail.loc[m1 & m2, "url"].values:
 
-        qs = url.split("?")[-1]
-        data_url = f"https://www.ndbc.noaa.gov/view_text_file.php?{qs}"
+        if "?" in url:
+            qs = url.split("?")[-1]
+            data_url = f"https://www.ndbc.noaa.gov/view_text_file.php?{qs}"
+        else:
+            data_url = f"https://www.ndbc.noaa.gov{url}"
+
         txt = make_request(data_url)
 
         df = parsers[dataset](txt)
