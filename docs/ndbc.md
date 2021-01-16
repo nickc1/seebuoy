@@ -9,6 +9,10 @@ df = ndbc.real_time('41013')
 df.head()
 ```
 
+| date                |   wdir |   wspd |   gst |   wvht |   dpd |   apd |   mwd |   pres |   atmp |   wtmp |   dewp |   vis |   ptdy |   tide |
+|:--------------------|-------:|-------:|------:|-------:|------:|------:|------:|-------:|-------:|-------:|-------:|------:|-------:|-------:|
+| 2021-01-16 22:50:00 |    280 |     12 |    17 |    2.8 |     8 |   5.7 |   216 | 1008.5 |    nan |   18.9 |    nan |   nan |    nan |    nan |
+| 2021-01-16 22:40:00 |    270 |     13 |    16 |  nan   |   nan | nan   |   nan | 1008.3 |    nan |   18.9 |    nan |   nan |    nan |    nan |
 
 ## Data Files
 Most buoys have the following data files associated with them:
