@@ -9,6 +9,10 @@ df = ndbc.real_time('41013')
 df.head()
 ```
 
+| date                |   wdir |   wspd |   gst |   wvht |   dpd |   apd |   mwd |   pres |   atmp |   wtmp |   dewp |   vis |   ptdy |   tide |
+|:--------------------|-------:|-------:|------:|-------:|------:|------:|------:|-------:|-------:|-------:|-------:|------:|-------:|-------:|
+| 2021-01-16 22:50:00 |    280 |     12 |    17 |    2.8 |     8 |   5.7 |   216 | 1008.5 |    nan |   18.9 |    nan |   nan |    nan |    nan |
+| 2021-01-16 22:40:00 |    270 |     13 |    16 |  nan   |   nan | nan   |   nan | 1008.3 |    nan |   18.9 |    nan |   nan |    nan |    nan |
 
 ## Data Files
 Most buoys have the following data files associated with them:
@@ -87,3 +91,45 @@ df = ndbc.historic('41037', 2019)
 | 2020-09-26 16:50:00 |    350 |      3 |     5 |    1.2 |     7 |   5.6 |   164 | 1014.7 |  nan   |   26.8 |  nan   |   nan |    nan |    nan |
 | 2020-09-26 16:40:00 |    340 |      3 |     5 |    1.2 |   nan |   5.6 |   164 | 1014.7 |   24   |   26.8 |   21.4 |   nan |    nan |    nan |
 
+
+If you want to pull a subset of years:
+
+```python
+years = ndbc.available_years('41037', "stdmet")
+df_store = []
+for year in years[-3:]:
+  df_store.append(ndbc.historic('41037', year, dataset="stdmet"))
+
+df = pd.concat(df_store)
+```
+
+There is also a convenience function that can pull all available data. **This can pull a large amount of data so be kind to ndbc.**
+
+```python
+df_all = ndbc.all_historic('41037', dataset="stdmet")
+```
+
+When you pull data from a large year range, it is possible that the data format has changed, so you might need to do some cleaning. Here is a full real world example:
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+from seebuoy import ndbc
+
+buoy = 41013
+dataset = "stdmet"
+
+df = ndbc.all_historic(buoy, dataset)
+
+df_wvht = df['wvht'].dropna()
+
+fig, ax = plt.subplots(figsize=(12, 6))
+df_wvht.plot(ax=ax)
+df_wvht.resample("w").mean().plot(ax=ax)
+df_wvht.resample("m").mean().plot(ax=ax)
+
+```
+
+<p align="center">
+  <img src="/img/wvht_41013_stdmet.png" alt="seebuoy">
+</p>

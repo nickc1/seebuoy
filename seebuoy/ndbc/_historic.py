@@ -140,10 +140,9 @@ def _stdmet(txt):
         StringIO(txt),
         header=0,
         delim_whitespace=True,
-        na_values=[99, 999, 9999, 99.0, 999.0, 9999.0],
+        na_values=[99, 999, 9999, 99.0, 99.00, 999.0, 9999.0, "99", "99.0", "99.00"],
     )
 
-    print(df.head(3))
     # first row is units, so drop it. data after 2007 has units
     if df.iloc[0, 0] == "#yr":
         df = df.drop(df.index[0])
@@ -152,12 +151,50 @@ def _stdmet(txt):
     if "mm" in df.columns:
         res = df.iloc[:, :5].astype(str).agg("-".join, axis=1)
         df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
-
+        df = df.iloc[:, 5:]
     else:
-        res = df.iloc[:, :4].agg("-".join, axis=1)
+        res = df.iloc[:, :4].astype(str).agg("-".join, axis=1)
         df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
+        df = df.iloc[:, 4:]
 
     df = df.set_index("date")
 
     df.columns = df.columns.str.lower()
     return df.astype(float)
+
+
+def available_years(buoy, dataset):
+    df = available_datasets(buoy)
+    mask = df["dataset"] == dataset
+    years = df.loc[mask, "year"].unique()
+    return years
+
+
+def all_historic(buoy, dataset="stdmet"):
+    """Retrieve all historic data for a given buoy and dataset.
+    This can pull a significant amount of data, so be kind to NDBC.
+
+    Args:
+        buoy (int): Buoy Id
+        dataset (str): Which dataset to pull in. To see list of available
+            datasets, see ndbc.available_downloads
+    """
+
+    years = available_years(buoy, dataset)
+
+    if not len(years):
+        raise ValueError(
+            f"No {dataset} data available for buoy {buoy}."
+            "Try running `ndbc.available_datasets(buoy, dataset)` to see"
+            "available data"
+        )
+
+    df_store = []
+    for year in years:
+        print(f"Pulling {dataset} for {year}")
+        df = historic(buoy, year, dataset)
+        df_store.append(df)
+
+    df = pd.concat(df_store)
+
+    return df

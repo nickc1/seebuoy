@@ -32,3 +32,10 @@ def test_available_downloads():
 def test_historic():
     df = ndbc.historic(41037, 2018, "stdmet")
     assert len(df) > 0
+
+
+def test_all_historic():
+
+    df = ndbc.all_historic(41037, "stdmet")
+
+    assert len(df) > 0

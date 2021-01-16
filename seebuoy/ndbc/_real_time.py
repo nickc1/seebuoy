@@ -54,8 +54,9 @@ def real_time(buoy, dataset="txt"):
 
     if txt is None:
         return
-
-    return opts[dataset](txt)
+    df = opts[dataset](txt)
+    df.columns = df.columns.str.lower()
+    return df
 
 
 def _data_spec(txt):

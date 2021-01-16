@@ -3,7 +3,6 @@ import requests
 
 def make_request(url):
 
-    print(url)
     resp = requests.get(url)
     if resp.status_code == 200:
         return resp.text
