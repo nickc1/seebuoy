@@ -140,7 +140,7 @@ def _stdmet(txt):
         StringIO(txt),
         header=0,
         delim_whitespace=True,
-        na_values=[99, 999, 9999, 99.0, 999.0, 9999.0],
+        na_values=[99, 999, 9999, 99.0, 99.00, 999.0, 9999.0, "99", "99.0", "99.00"],
     )
 
     # first row is units, so drop it. data after 2007 has units
