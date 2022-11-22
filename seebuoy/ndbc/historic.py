@@ -2,7 +2,7 @@ import requests
 from io import StringIO
 import pandas as pd
 from bs4 import BeautifulSoup
-from ._request import make_request
+from ._request import get_url
 
 BASE_URL = "http://www.ndbc.noaa.gov/view_text_file.php?filename="
 
@@ -17,7 +17,7 @@ def _get_all_urls(buoy):
 
     url = f"https://www.ndbc.noaa.gov/station_history.php?station={buoy}"
 
-    txt = make_request(url)
+    txt = get_url(url)
 
     soup = BeautifulSoup(txt, features="html.parser")
 
@@ -59,7 +59,7 @@ def _parse_urls(data_urls):
     return data
 
 
-def available_datasets(buoy):
+def available_datasets(buoy_id):
     """Parse out what the urls actually denote. Date and data type.
 
     Link examples:
@@ -75,7 +75,7 @@ def available_datasets(buoy):
         Dataframe of the available downloads
     """
 
-    data_urls = _get_all_urls(buoy)
+    data_urls = _get_all_urls(buoy_id)
     data = _parse_urls(data_urls)
     df = pd.DataFrame(data)
 
@@ -87,7 +87,7 @@ def available_datasets(buoy):
     return df.sort_values(["dataset", "date"])
 
 
-def historic(buoy, year, dataset="stdmet"):
+def historic_data(buoy, year, dataset="stdmet"):
     """Retrieves historical data for the requested buoy, year, and dataset.
     Need to cover both urls:
 
@@ -126,7 +126,7 @@ def historic(buoy, year, dataset="stdmet"):
         else:
             data_url = f"https://www.ndbc.noaa.gov{url}"
 
-        txt = make_request(data_url)
+        txt = get_url(data_url)
 
         df = parsers[dataset](txt)
         df_store.append(df)
@@ -134,7 +134,8 @@ def historic(buoy, year, dataset="stdmet"):
     return pd.concat(df_store)
 
 
-def _stdmet(txt):
+def standard(txt):
+    """Parses the filed ending in stdmet."""
 
     df = pd.read_csv(
         StringIO(txt),

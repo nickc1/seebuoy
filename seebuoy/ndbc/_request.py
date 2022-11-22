@@ -1,7 +1,7 @@
 import requests
 
 
-def make_request(url):
+def get_url(url):
 
     resp = requests.get(url)
     if resp.status_code == 200:

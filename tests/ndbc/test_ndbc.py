@@ -17,7 +17,7 @@ def test_real_time():
     buoy = 41013
 
     for d in datasets:
-        df = ndbc.real_time(buoy, d)
+        df = ndbc.recent(buoy, d)
         # should return a df or None
         dtype = type(df)
         assert dtype == pd.core.frame.DataFrame or df is None

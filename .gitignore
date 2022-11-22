@@ -8,3 +8,7 @@ __pycache__/
 *.egg-info
 
 /site
+
+# notebooks
+*.ipynb
+.ipynb_checkpoints/
