@@ -32,6 +32,24 @@ OCEANOGRAPHIC_MAP = {
     'eh': 'redox',
 }
 
+def parse_avail_recent_datasets(txt):
+
+    df = pd.read_html(txt)[0]
+    df = df.dropna(subset=["Last modified"])
+    
+    col_rename = {
+        "Name": "name",
+        "Last modified": "last_modified",
+        "Size": "size",
+        "Description": "description"
+    }
+    
+    df = df[list(col_rename)].rename(columns=col_rename)
+    
+    df["buoy_id"] = df["name"].str.split('.').str[0]
+    df["dataset"] = df["name"].str.split('.').str[1]
+
+    return df
 
 def standard(txt, rename_cols=True):
     """Parse the dataset that ends in txt"""

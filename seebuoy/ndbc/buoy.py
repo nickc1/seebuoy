@@ -38,7 +38,7 @@ class Buoy:
         self.recent_url = "http://www.ndbc.noaa.gov/data/realtime2"
         self.df_available = historic.available_datasets(buoy_id)
     
-
+    
     def get_recent_data(self, dataset="standard"):
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
