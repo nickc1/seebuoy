@@ -37,6 +37,7 @@ RECENT_DATASETS ={
     
 }
 
+
 def get_url(url):
 
     resp = requests.get(url)
@@ -88,20 +89,32 @@ def avail_recent_datasets():
 
 # CURRENT YEAR
 
-def avail_current_year_months(dataset):
-
+def avail_current_year(dataset):
     suffix = HIST_DATASETS[dataset]
-    url = f"https://www.ndbc.noaa.gov/data/{suffix}"
-    txt = get_url(url)
+    months = [
+        "Jan", 
+        "Feb", 
+        "Mar", 
+        "Apr", 
+        "May", 
+        "Jun", 
+        "Jul", 
+        "Aug",
+        "Sep", 
+        "Oct", 
+        "Nov", 
+        "Dec"
+        ]
+    
+    data = {}
+    for month in months:
+    
+        url = f"https://www.ndbc.noaa.gov/data/{suffix}/{month}"
+        txt = get_url(url)
+        data[month] = txt
 
-    return txt
+    return data
 
-def avail_current_year(dataset, month):
-    suffix = HIST_DATASETS[dataset]
-    url = f"https://www.ndbc.noaa.gov/data/{suffix}/{month}"
-    txt = get_url(url)
-
-    return txt
 
 # HISTORICAL
 

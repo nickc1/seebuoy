@@ -3,7 +3,7 @@ from . import extract
 from .transform import recent as tr_recent
 from .transform import metadata as tr_metadata
 from .transform import historic as tr_historic
-
+from .transform import current_year as tr_current
 
 class BuoyNetwork:
 
@@ -37,7 +37,10 @@ class BuoyNetwork:
         return df
     
     def available_current_year(self):
-        
+
+        for dataset in extract.HIST_DATASETS:
+            txt = extract.avail_current_year_months(dataset)
+            df_months = tr_
 
     def available_historic_data(self):
 
