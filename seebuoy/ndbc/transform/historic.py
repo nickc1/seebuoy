@@ -9,7 +9,7 @@ def _build_txt_url(name, suffix):
     return url
 
 def parse_avail_historical(txt, dataset):
-    file_ext = extract.HIST_DATASETS[dataset]
+    file_suffix = extract.HIST_DATASETS[dataset]
     
     df_raw = pd.read_html(txt)[0]
 
@@ -26,16 +26,18 @@ def parse_avail_historical(txt, dataset):
     df["compression"] = df["file_name"].str.split('.').str[-1]
     df["file_extension"] = df["file_name"].str.split('.').str[-2]
     df["file_root"] = df["file_name"].str.split('.').str[0]
-    df["buoy_id"] = df["file_root"].str[:-5]
+    df["station_id"] = df["file_root"].str[:-5]
     df["file_year"] = df["file_root"].str[-4:]
 
-    df["url"] = f"historical/{file_ext}/" + df["file_name"]
+    df["url"] = f"historical/{file_suffix}/" + df["file_name"]
+    df["file_suffix"] = file_suffix
+    df["dataset"] = dataset
 
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
-    df["txt_url"] = df.apply(lambda row: _build_txt_url(row['file_root'], row['file_extension']), axis=1)
+    df["txt_url"] = df.apply(lambda row: _build_txt_url(row['file_name'], row['file_suffix']), axis=1)
 
 
-    df["dataset"] = dataset
+    
 
     return df
 
