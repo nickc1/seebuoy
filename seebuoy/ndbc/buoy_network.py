@@ -42,7 +42,7 @@ class BuoyNetwork:
         m = df["dataset"].isin(dataset)
         df = df[m].copy()
 
-        self.df_recent_data = df
+        self.df_recent = df
 
         return df
     
@@ -85,3 +85,30 @@ class BuoyNetwork:
 
         return df
         
+    def available_data(self, dataset="standard"):
+
+        try:
+            df_recent = self.df_recent_data
+        except AttributeError:
+            df_recent = self.available_recent_data(dataset)
+        
+        try:
+            df_current_yr = self.df_current_yr
+        except AttributeError:
+            df_current_yr = self.available_current_year_data(dataset)
+        
+        try:
+            df_historic = self.df_historic
+        except AttributeError:
+            df_historic = self.available_historic_data(dataset)
+        
+        df_recent["data_group"] = "recent"
+        df_current_yr["data_group"] = "current_year"
+        df_historic["data_group"] = "historic"
+
+
+        df = pd.concat([df_recent, df_current_yr, df_historic])
+
+        self.df_avail = df
+
+        return df
