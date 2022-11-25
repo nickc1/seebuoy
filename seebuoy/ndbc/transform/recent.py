@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 from io import StringIO
+from .. import extract
 
 STANDARD_MAP = {
     'wdir': 'wind_direction',
@@ -38,7 +39,7 @@ def parse_avail_recent_datasets(txt):
     df = df.dropna(subset=["Last modified"])
     
     col_rename = {
-        "Name": "name",
+        "Name": "file_name",
         "Last modified": "last_modified",
         "Size": "size",
         "Description": "description"
@@ -46,9 +47,13 @@ def parse_avail_recent_datasets(txt):
     
     df = df[list(col_rename)].rename(columns=col_rename)
     
-    df["buoy_id"] = df["name"].str.split('.').str[0]
-    df["dataset"] = df["name"].str.split('.').str[1]
+    df["buoy_id"] = df["file_name"].str.split('.').str[0]
+    df["file_extension"] = df["file_name"].str.split('.').str[1]
 
+    mapper = {v:k for k, v in extract.RECENT_DATASETS.items()}
+    df["dataset"] = df["file_extension"].map(mapper)
+
+    df["url"] = "realtime2/" + df["file_name"]
     return df
 
 def standard(txt, rename_cols=True):

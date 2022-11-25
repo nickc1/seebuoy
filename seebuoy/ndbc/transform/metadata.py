@@ -63,6 +63,6 @@ def add_closest_cities(df):
 
 def add_owners(df_buoys, df_owners):
 
-    df = pd.merge(df, df_owners, left_on="owner", right_on="ownercode", how="left")
+    df = pd.merge(df_buoys, df_owners, left_on="owner", right_on="ownercode", how="left")
 
     return df

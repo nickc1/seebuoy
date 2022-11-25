@@ -1,5 +1,6 @@
 from io import StringIO
 import pandas as pd
+from ..import extract
 
 def _build_txt_url(name, suffix):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
@@ -7,13 +8,14 @@ def _build_txt_url(name, suffix):
     
     return url
 
-def parse_avail_historical(txt, dataset=None):
-
+def parse_avail_historical(txt, dataset):
+    file_ext = extract.HIST_DATASETS[dataset]
+    
     df_raw = pd.read_html(txt)[0]
 
     df = df_raw.dropna(subset=["Last modified"])
     col_rename = {
-        "Name": "name",
+        "Name": "file_name",
         "Last modified": "last_modified",
         "Size": "size",
         "Description": "description"
@@ -21,17 +23,19 @@ def parse_avail_historical(txt, dataset=None):
     df = df[list(col_rename)].rename(columns=col_rename)    
 
     # Example file name: 42007h1989.txt.gz
-    df["compression"] = df["name"].str.split('.').str[-1]
-    df["file_extension"] = df["name"].str.split('.').str[-2]
-    df["file_name"] = df["name"].str.split('.').str[0]
-    df["buoy_id"] = df["file_name"].str[:-5]
-    df["file_year"] = df["file_name"].str[-4:]
+    df["compression"] = df["file_name"].str.split('.').str[-1]
+    df["file_extension"] = df["file_name"].str.split('.').str[-2]
+    df["file_root"] = df["file_name"].str.split('.').str[0]
+    df["buoy_id"] = df["file_root"].str[:-5]
+    df["file_year"] = df["file_root"].str[-4:]
+
+    df["url"] = f"historical/{file_ext}/" + df["file_name"]
 
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
-    df["txt_url"] = df.apply(lambda row: _build_txt_url(row['name'], row['suffix']), axis=1)
+    df["txt_url"] = df.apply(lambda row: _build_txt_url(row['file_root'], row['file_extension']), axis=1)
 
-    if dataset is not None:
-        df["dataset"] = dataset
+
+    df["dataset"] = dataset
 
     return df
 

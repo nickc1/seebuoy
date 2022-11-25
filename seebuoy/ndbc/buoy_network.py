@@ -1,4 +1,5 @@
 
+import pandas as pd
 from . import extract
 from .transform import recent as tr_recent
 from .transform import metadata as tr_metadata
@@ -27,26 +28,59 @@ class BuoyNetwork:
 
         return df
 
-    def available_recent_data(self):
+    def available_recent_data(self, dataset="standard"):
+
+        if dataset == "all":
+            dataset = list(extract.HIST_DATASETS)
+        elif isinstance(dataset, str):
+            dataset = [dataset]
 
         txt = extract.avail_recent_datasets()
         df = tr_recent.parse_avail_recent_datasets(txt)
+
+        # subset out dataset
+        m = df["dataset"].isin(dataset)
+        df = df[m].copy()
 
         self.df_recent_data = df
 
         return df
     
-    def available_current_year(self):
+    def available_current_year_data(self, dataset="standard"):
 
-        for dataset in extract.HIST_DATASETS:
-            txt = extract.avail_current_year_months(dataset)
-            df_months = tr_
+        if dataset == "all":
+            dataset = list(extract.HIST_DATASETS)
+        elif isinstance(dataset, str):
+            dataset = [dataset]
 
-    def available_historic_data(self):
+        df_store = []
+        for dset in dataset:
+            data = extract.avail_current_year(dset)
+            df = tr_current.parse_avail_current_year(data, dset)
 
-        data = extract.all_avail_historical()
-        df = tr_historic.parse_all_avail_historical(data)
+            df_store.append(df)
+        
+        df = pd.concat(df_store)
 
+        self.df_current_yr = df
+        
+        return df
+
+    def available_historic_data(self, dataset="standard"):
+
+        if dataset == "all":
+            dataset = list(extract.HIST_DATASETS)
+        elif isinstance(dataset, str):
+            dataset = [dataset]
+        
+        df_store = []
+        for d in dataset:
+            txt = extract.avail_historical(d)
+        
+            df = tr_historic.parse_avail_historical(txt, dataset=d)
+            df_store.append(df)
+
+        df = pd.concat(df_store)
         self.df_historic = df
 
         return df

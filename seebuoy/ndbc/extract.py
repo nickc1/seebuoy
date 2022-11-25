@@ -37,6 +37,8 @@ RECENT_DATASETS ={
     
 }
 
+BASE_URL = "https://www.ndbc.noaa.gov/data"
+
 
 def get_url(url):
 
@@ -53,7 +55,7 @@ def get_url(url):
 
 def buoy_owners():
 
-    url = "https://www.ndbc.noaa.gov/data/stations/station_owners.txt"
+    url = "{BASE_URL}/stations/station_owners.txt"
     txt = get_url(url)
 
     return txt
@@ -61,7 +63,7 @@ def buoy_owners():
 
 def buoy_locations():
     
-    url = "https://www.ndbc.noaa.gov/data/stations/station_table.txt"
+    url = f"{BASE_URL}/stations/station_table.txt"
     txt = get_url(url)
 
     return txt
@@ -81,8 +83,8 @@ def avail_recent_datasets():
         41013.swr2
         41013.txt
     """
-    
-    url = "https://www.ndbc.noaa.gov/data/realtime2/"
+
+    url = f"{BASE_URL}/realtime2"
     txt = get_url(url)
 
     return txt
@@ -90,7 +92,7 @@ def avail_recent_datasets():
 # CURRENT YEAR
 
 def avail_current_year(dataset):
-    suffix = HIST_DATASETS[dataset]
+    file_ext = HIST_DATASETS[dataset]
     months = [
         "Jan", 
         "Feb", 
@@ -109,7 +111,7 @@ def avail_current_year(dataset):
     data = {}
     for month in months:
     
-        url = f"https://www.ndbc.noaa.gov/data/{suffix}/{month}"
+        url = f"{BASE_URL}/{file_ext}/{month}"
         txt = get_url(url)
         data[month] = txt
 
@@ -120,10 +122,10 @@ def avail_current_year(dataset):
 
 def avail_historical(dataset):
     
-    suffix = HIST_DATASETS[dataset]
+    file_ext = HIST_DATASETS[dataset]
 
-    base_url = "https://www.ndbc.noaa.gov/data/historical"
-    url = f"{base_url}/{suffix}"
+    base_url = f"{BASE_URL}/historical"
+    url = f"{base_url}/{file_ext}"
     txt = get_url(url)
 
     return txt
