@@ -1,6 +1,28 @@
 from io import StringIO
 import pandas as pd
-from ..import extract
+from .. import extract
+from .recent import STANDARD_MAP
+
+STANDARD_MAP = {
+    'wd': 'wind_direction', # older version
+    'wdir': 'wind_direction',
+    'wspd': 'wind_speed',
+    'gst': 'wind_gust',
+    'wvht': 'wave_height',
+    'dpd': 'dominant_period',
+    'apd': 'average_period',
+    'mwd': 'mean_wave_direction',
+    'bar': 'pressure', # older version
+    'pres': 'pressure',
+    'atmp': 'air_temp',
+    'wtmp': 'water_temp',
+    'dewp': 'dewpoint',
+    'vis': 'visibility',
+    'ptdy': 'pressure_tendency',
+    'tide': 'tide',
+}
+
+
 
 def _build_txt_url(name, suffix):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
@@ -36,9 +58,6 @@ def parse_avail_historical(txt, dataset):
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
     df["txt_url"] = df.apply(lambda row: _build_txt_url(row['file_name'], row['file_suffix']), axis=1)
 
-
-    
-
     return df
 
 
@@ -53,7 +72,7 @@ def parse_all_avail_historical(data):
     return pd.concat(df_store)
 
 
-def standard(txt):
+def standard(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
     df = pd.read_csv(
@@ -79,84 +98,6 @@ def standard(txt):
 
     df = df.set_index("date")
 
-    df.columns = df.columns.str.lower()
+    if rename_cols:
+        df.columns = df.columns.str.lower().map(STANDARD_MAP)
     return df.astype(float)
-
-
-# DEPRECATED
-def historic_data(buoy, year, dataset="stdmet"):
-    """Retrieves historical data for the requested buoy, year, and dataset.
-    Need to cover both urls:
-
-    https://www.ndbc.noaa.gov/data/stdmet/Nov/41108.txt
-    https://www.ndbc.noaa.gov/view_text_file.php?filename=41108a2020.txt.gz&dir=data/stdmet/Oct/
-
-    Args:
-        buoy (int): Buoy Id
-        year (int): Years to pull data.
-        dataset (str): Which dataset to pull in. To see list of available
-            datasets, see ndbc.available_downloads
-    """
-
-    df_avail = available_datasets(buoy)
-
-    parsers = {
-        "stdmet": _stdmet,
-    }
-
-    if dataset not in df_avail["dataset"].values:
-        raise ValueError(
-            f"Dataset {dataset} not available for year {year} on buoy {buoy}"
-        )
-
-    if dataset not in parsers:
-        raise ValueError("Dataset must be one of {}".format(", ".join(parsers)))
-
-    m1 = df_avail["dataset"] == dataset
-    m2 = df_avail["year"] == str(year)
-    df_store = []
-    for url in df_avail.loc[m1 & m2, "url"].values:
-
-        if "?" in url:
-            qs = url.split("?")[-1]
-            data_url = f"https://www.ndbc.noaa.gov/view_text_file.php?{qs}"
-        else:
-            data_url = f"https://www.ndbc.noaa.gov{url}"
-
-        txt = get_url(data_url)
-
-        df = parsers[dataset](txt)
-        df_store.append(df)
-
-    return pd.concat(df_store)
-
-
-
-def all_historic(buoy, dataset="stdmet"):
-    """Retrieve all historic data for a given buoy and dataset.
-    This can pull a significant amount of data, so be kind to NDBC.
-
-    Args:
-        buoy (int): Buoy Id
-        dataset (str): Which dataset to pull in. To see list of available
-            datasets, see ndbc.available_downloads
-    """
-
-    years = available_years(buoy, dataset)
-
-    if not len(years):
-        raise ValueError(
-            f"No {dataset} data available for buoy {buoy}."
-            "Try running `ndbc.available_datasets(buoy, dataset)` to see"
-            "available data"
-        )
-
-    df_store = []
-    for year in years:
-        print(f"Pulling {dataset} for {year}")
-        df = historic(buoy, year, dataset)
-        df_store.append(df)
-
-    df = pd.concat(df_store)
-
-    return df

@@ -1,6 +1,8 @@
 
 import requests
 import pandas as pd
+from .transform import recent, historic, current_year, parser
+from .buoy_network import BuoyNetwork
 
 DATASET_MAP ={
     "standard": "txt",
@@ -27,17 +29,25 @@ def get_url(url):
         raise ValueError(f"Error code {resp.status_code} for url: \n {url}")
 
 
-class Buoy:
+class Buoy(BuoyNetwork):
 
-    def __init__(self, buoy_id, rename_cols=True):
+    def __init__(self, station_id, rename_cols=True):
 
-        self.buoy_id = buoy_id
+        self.station_id = station_id
         self.rename_cols = rename_cols
-        self.recent_url = "http://www.ndbc.noaa.gov/data/realtime2"
-        self.df_available = historic.available_datasets(buoy_id)
     
+    def get_available_data(self, dataset="standard"):
+
+        df = self.available_data(dataset=dataset)
+        m = df["station_id"] == self.station_id
+
+        df = df[m].copy()
+
+        self.df_avail = df
+        
+        return df
     
-    def get_recent_data(self, dataset="standard"):
+    def get_data(self, dataset="standard", data_group="all", start_date=None, end_date=None):
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
 
@@ -65,103 +75,51 @@ class Buoy:
             Returns:
                 DataFrame containing the requested data.
         """
-        
-        data_suffix = DATASET_MAP[dataset]
 
-        url = f"{self.recent_url}/{self.buoy_id}.{data_suffix}"
-        
-        txt = get_url(url)
+        df_store = []        
+        for row in self.df_avail.to_dict(orient="records"):
 
-        if txt is None:
-            return None
+            data_group = row["data_group"]
+            url = row["txt_url"]
 
-        if dataset == "standard":
-            df = recent.standard(txt, rename_cols=self.rename_cols)
-        
-        elif dataset == "oceanographic":
-            df = recent.oceanographic(txt, rename_cols=self.rename_cols)
-        
-        elif dataset == "supplemental":
-            df = recent.supplemental(txt)
+            txt = get_url(url)
 
-        elif dataset == "raw_spectral":
-            df = recent.raw_spectral(txt)
-        
-        elif dataset == "spectral_summary":
-            df = recent.spectral_summary(txt)        
-
-        elif dataset == "spectral_alpha1":
-            df = recent.spectral_alpha1(txt)
-        
-        elif dataset == "spectral_alpha2":
-            df = recent.spectral_alpha2(txt)
-
-        elif dataset == "spectral_r1":
-            df = recent.spectral_r1(txt)
-        
-        elif dataset == "spectral_r2":
-            df = recent.spectral_r2(txt)
-        else:
-            raise ValueError(f"Dataset must be one of {list(DATASET_MAP)}.")           
-        
-        df.columns = df.columns.str.lower()
-
-        return df
-
-
-    def get_historic_data(self, years, dataset="standard"):
-        """Get the historical data for the given buoy.
-
-            - standard: Standard Meteorological Data. [stdmet]
-        
-            Args:
-                years (list): List of years to pull the historical data.
-                dataset (str): What dataset to query. Possible values are:
-                    'standard'.
-
-            Returns:
-                DataFrame containing the requested data.
-        """
-
-        mask = self.df_avail["dataset"] == dataset
-        df_avail = self.df_avail[mask].copy()
-
-        if years == "all":
-            pull_years = df_avail["year"].unique()
-
-            if not len(years):
-                raise ValueError(
-                    f"No {dataset} data available for buoy {self.buoy_id}."
-                    "Check the df_avail attribute to see the list of available datasets."
-                )
-        else:
-            pull_years = [yr for yr in years if yr in df_avail["year"].unique()]
-
-            if len(years) != len(pull_years):
-                print(f"Not all years are available. Pulling: {pull_years}")
-
-        # get the raw text data
-        df_store = []
-        for year in pull_years:
-            m = df_avail["year"] == year
-            url = df_avail.loc[m, url]
-            
-            # slight adjustments needed to url
-            if "?" in url:
-                qs = url.split("?")[-1]
-                data_url = f"https://www.ndbc.noaa.gov/view_text_file.php?{qs}"
-            else:
-                data_url = f"https://www.ndbc.noaa.gov{url}"
-
-            txt = get_url(data_url)
+            if txt is None:
+                df = pd.DataFrame()
 
             if dataset == "standard":
-                df = historic.standard(txt)
+                df = parser.standard(txt, data_group, rename_cols=self.rename_cols)
+
+            elif dataset == "oceanographic":
+                df = parser.oceanographic(txt, data_group, rename_cols=self.rename_cols)
+
+            elif dataset == "supplemental":
+                df = parser.supplemental(txt, data_group)
+
+            elif dataset == "raw_spectral":
+                df = parser.raw_spectral(txt, data_group)
+
+            elif dataset == "spectral_summary":
+                df = parser.spectral_summary(txt, data_group)        
+
+            elif dataset == "spectral_alpha1":
+                df = parser.spectral_alpha1(txt, data_group)
+
+            elif dataset == "spectral_alpha2":
+                df = parser.spectral_alpha2(txt, data_group)
+
+            elif dataset == "spectral_r1":
+                df = parser.spectral_r1(txt, data_group)
+
+            elif dataset == "spectral_r2":
+                df = parser.spectral_r2(txt, data_group)
             else:
-                raise ValueError("Only standard implemented right now.")
-            
+                raise ValueError(f"Dataset must be one of {list(DATASET_MAP)}.")           
+
+            df["url"] = row["url"]
+            df["txt_url"] = url
             df_store.append(df)
 
-        return pd.concat(df)
+        return pd.concat(df_store)
 
         
