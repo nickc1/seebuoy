@@ -4,33 +4,33 @@ from io import StringIO
 from .. import extract
 
 STANDARD_MAP = {
-    'wdir': 'wind_direction',
-    'wspd': 'wind_speed',
-    'gst': 'wind_gust',
-    'wvht': 'wave_height',
-    'dpd': 'dominant_period',
-    'apd': 'average_period',
-    'mwd': 'mean_wave_direction',
-    'pres': 'pressure',
-    'atmp': 'air_temp',
-    'wtmp': 'water_temp',
-    'dewp': 'dewpoint',
-    'vis': 'visibility',
-    'ptdy': 'pressure_tendency',
-    'tide': 'tide',
+    "wdir": "wind_direction",
+    "wspd": "wind_speed",
+    "gst": "wind_gust",
+    "wvht": "wave_height",
+    "dpd": "dominant_period",
+    "apd": "average_period",
+    "mwd": "mean_wave_direction",
+    "pres": "pressure",
+    "atmp": "air_temp",
+    "wtmp": "water_temp",
+    "dewp": "dewpoint",
+    "vis": "visibility",
+    "ptdy": "pressure_tendency",
+    "tide": "tide",
 }
 
 OCEANOGRAPHIC_MAP = {
-    'depth': 'depth',
-    'otmp': 'ocean_temp',
-    'cond': 'conductivity',
-    'sal': 'salinity',
-    'o2%': 'dissolved_o2_perc',
-    'o2ppm': 'dissolved_o2_ppm',
-    'clcon': 'cholorophyll',
-    'turb': 'turbidity',
-    'ph': 'ph',
-    'eh': 'redox',
+    "depth": "depth",
+    "otmp": "ocean_temp",
+    "cond": "conductivity",
+    "sal": "salinity",
+    "o2%": "dissolved_o2_perc",
+    "o2ppm": "dissolved_o2_ppm",
+    "clcon": "cholorophyll",
+    "turb": "turbidity",
+    "ph": "ph",
+    "eh": "redox",
 }
 
 SUPPLEMENTAL_MAP = {
@@ -38,31 +38,34 @@ SUPPLEMENTAL_MAP = {
     "ptime": "pressure_time",
     "wspd": "windspeed",
     "wdir": "wind_direction",
-    "wtime": "wind_time"
+    "wtime": "wind_time",
 }
+
+
 def parse_avail_recent_datasets(txt):
 
     df = pd.read_html(txt)[0]
     df = df.dropna(subset=["Last modified"])
-    
+
     col_rename = {
         "Name": "file_name",
         "Last modified": "last_modified",
         "Size": "size",
-        "Description": "description"
+        "Description": "description",
     }
-    
-    df = df[list(col_rename)].rename(columns=col_rename)
-    
-    df["station_id"] = df["file_name"].str.split('.').str[0]
-    df["file_extension"] = df["file_name"].str.split('.').str[1]
 
-    mapper = {v:k for k, v in extract.RECENT_DATASETS.items()}
+    df = df[list(col_rename)].rename(columns=col_rename)
+
+    df["station_id"] = df["file_name"].str.split(".").str[0]
+    df["file_extension"] = df["file_name"].str.split(".").str[1]
+
+    mapper = {v: k for k, v in extract.RECENT_DATASETS.items()}
     df["dataset"] = df["file_extension"].map(mapper)
 
     df["url"] = "realtime2/" + df["file_name"]
     df["txt_url"] = extract.BASE_URL + "/" + df["url"]
     return df
+
 
 def standard(txt, rename_cols=True):
     """Parse the dataset that ends in txt"""
@@ -115,7 +118,7 @@ def oceanographic(txt, rename_cols=True):
     if rename_cols:
         df.columns = df.columns.str.lower()
         df = df.rename(columns=OCEANOGRAPHIC_MAP)
-    
+
     return df
 
 

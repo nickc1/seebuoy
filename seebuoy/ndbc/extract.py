@@ -24,7 +24,7 @@ HIST_DATASETS = {
     "tide": "wlevel",
 }
 
-RECENT_DATASETS ={
+RECENT_DATASETS = {
     "standard": "txt",
     "oceanographic": "ocean",
     "supplemental": "supl",
@@ -34,7 +34,6 @@ RECENT_DATASETS ={
     "spectral_alpha2": "swdir2",
     "spectral_r1": "swr1",
     "spectral_r2": "swr2",
-    
 }
 
 BASE_URL = "https://www.ndbc.noaa.gov/data"
@@ -51,7 +50,9 @@ def get_url(url):
     else:
         raise ValueError(f"Error code {resp.status_code} for url: \n {url}")
 
+
 # METADATA
+
 
 def buoy_owners():
 
@@ -62,7 +63,7 @@ def buoy_owners():
 
 
 def buoy_locations():
-    
+
     url = f"{BASE_URL}/stations/station_table.txt"
     txt = get_url(url)
 
@@ -70,6 +71,7 @@ def buoy_locations():
 
 
 # RECENT
+
 
 def avail_recent_datasets():
     """All recent data (realtime) is put into the same folder. For example:
@@ -89,28 +91,30 @@ def avail_recent_datasets():
 
     return txt
 
+
 # CURRENT YEAR
+
 
 def avail_current_year(dataset):
     file_ext = HIST_DATASETS[dataset]
     months = [
-        "Jan", 
-        "Feb", 
-        "Mar", 
-        "Apr", 
-        "May", 
-        "Jun", 
-        "Jul", 
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
         "Aug",
-        "Sep", 
-        "Oct", 
-        "Nov", 
-        "Dec"
-        ]
-    
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ]
+
     data = {}
     for month in months:
-    
+
         url = f"{BASE_URL}/{file_ext}/{month}"
         txt = get_url(url)
         data[month] = txt
@@ -120,8 +124,9 @@ def avail_current_year(dataset):
 
 # HISTORICAL
 
+
 def avail_historical(dataset):
-    
+
     file_ext = HIST_DATASETS[dataset]
 
     base_url = f"{BASE_URL}/historical"
@@ -129,6 +134,7 @@ def avail_historical(dataset):
     txt = get_url(url)
 
     return txt
+
 
 def all_avail_historical():
     """
@@ -159,4 +165,3 @@ def all_avail_historical():
         txt_store["dataset"] = txt
 
     return txt_store
-    

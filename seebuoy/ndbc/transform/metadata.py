@@ -5,13 +5,9 @@ from ..data import large_cities
 
 
 def parse_buoy_owners(txt):
-    
-    df = pd.read_csv(
-        StringIO(txt),
-        sep='|',
-        skiprows=1
-    )
-    df.columns = df.columns.str.replace('#', '').str.lower().str.strip()
+
+    df = pd.read_csv(StringIO(txt), sep="|", skiprows=1)
+    df.columns = df.columns.str.replace("#", "").str.lower().str.strip()
     df["ownercode"] = df["ownercode"].str.strip()
 
     return df
@@ -19,19 +15,15 @@ def parse_buoy_owners(txt):
 
 def parse_buoy_locations(txt):
 
-    
-    df = pd.read_csv(
-        StringIO(txt),
-        sep='|'
-    )
+    df = pd.read_csv(StringIO(txt), sep="|")
 
     # parse out column names. First row is nans
-    df.columns = df.columns.str.replace('#', '').str.lower().str.strip()
+    df.columns = df.columns.str.replace("#", "").str.lower().str.strip()
     df = df.iloc[1:].reset_index(drop=True)
 
     # parse lat and lon
     # 30.000 N 90.000 W (30&#176;0'0" N 90&#176;0'0" W)
-    df["lat_lon"] = df["location"].str.split('(').str[0].str.strip()
+    df["lat_lon"] = df["location"].str.split("(").str[0].str.strip()
     lat_lon = df["lat_lon"].str.split(" ", expand=True)
     lat_lon.columns = ["lat", "north_south", "lon", "east_west"]
 
@@ -48,10 +40,12 @@ def parse_buoy_locations(txt):
 
 
 def add_closest_cities(df):
-    
+
     df_cities = pd.DataFrame(large_cities)
-    
-    nbrs = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(df_cities[["latitude", "longitude"]].values)
+
+    nbrs = NearestNeighbors(n_neighbors=1, algorithm="ball_tree").fit(
+        df_cities[["latitude", "longitude"]].values
+    )
     distances, indices = nbrs.kneighbors(df[["lat", "lon"]].values)
 
     df_closest_cities = df_cities.iloc[indices.flatten()].reset_index(drop=True)
@@ -63,6 +57,8 @@ def add_closest_cities(df):
 
 def add_owners(df_buoys, df_owners):
 
-    df = pd.merge(df_buoys, df_owners, left_on="owner", right_on="ownercode", how="left")
+    df = pd.merge(
+        df_buoys, df_owners, left_on="owner", right_on="ownercode", how="left"
+    )
 
     return df

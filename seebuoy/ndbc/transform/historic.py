@@ -1,38 +1,37 @@
 from io import StringIO
 import pandas as pd
 from .. import extract
-from .recent import STANDARD_MAP
 
 STANDARD_MAP = {
-    'wd': 'wind_direction', # older version
-    'wdir': 'wind_direction',
-    'wspd': 'wind_speed',
-    'gst': 'wind_gust',
-    'wvht': 'wave_height',
-    'dpd': 'dominant_period',
-    'apd': 'average_period',
-    'mwd': 'mean_wave_direction',
-    'bar': 'pressure', # older version
-    'pres': 'pressure',
-    'atmp': 'air_temp',
-    'wtmp': 'water_temp',
-    'dewp': 'dewpoint',
-    'vis': 'visibility',
-    'ptdy': 'pressure_tendency',
-    'tide': 'tide',
+    "wd": "wind_direction",  # older version
+    "wdir": "wind_direction",
+    "wspd": "wind_speed",
+    "gst": "wind_gust",
+    "wvht": "wave_height",
+    "dpd": "dominant_period",
+    "apd": "average_period",
+    "mwd": "mean_wave_direction",
+    "bar": "pressure",  # older version
+    "pres": "pressure",
+    "atmp": "air_temp",
+    "wtmp": "water_temp",
+    "dewp": "dewpoint",
+    "vis": "visibility",
+    "ptdy": "pressure_tendency",
+    "tide": "tide",
 }
 
 OCEANOGRAPHIC_MAP = {
-    'depth': 'depth',
-    'otmp': 'ocean_temp',
-    'cond': 'conductivity',
-    'sal': 'salinity',
-    'o2%': 'dissolved_o2_perc',
-    'o2ppm': 'dissolved_o2_ppm',
-    'clcon': 'cholorophyll',
-    'turb': 'turbidity',
-    'ph': 'ph',
-    'eh': 'redox',
+    "depth": "depth",
+    "otmp": "ocean_temp",
+    "cond": "conductivity",
+    "sal": "salinity",
+    "o2%": "dissolved_o2_perc",
+    "o2ppm": "dissolved_o2_ppm",
+    "clcon": "cholorophyll",
+    "turb": "turbidity",
+    "ph": "ph",
+    "eh": "redox",
 }
 
 SUPPLEMENTAL_MAP = {
@@ -40,18 +39,20 @@ SUPPLEMENTAL_MAP = {
     "ptime": "pressure_time",
     "wspd": "windspeed",
     "wdir": "wind_direction",
-    "wtime": "wind_time"
+    "wtime": "wind_time",
 }
+
 
 def _build_txt_url(name, suffix):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
     url = f"{base_url}={name}&dir=data/historical/{suffix}/"
-    
+
     return url
+
 
 def parse_avail_historical(txt, dataset):
     file_suffix = extract.HIST_DATASETS[dataset]
-    
+
     df_raw = pd.read_html(txt)[0]
 
     df = df_raw.dropna(subset=["Last modified"])
@@ -59,14 +60,14 @@ def parse_avail_historical(txt, dataset):
         "Name": "file_name",
         "Last modified": "last_modified",
         "Size": "size",
-        "Description": "description"
+        "Description": "description",
     }
-    df = df[list(col_rename)].rename(columns=col_rename)    
+    df = df[list(col_rename)].rename(columns=col_rename)
 
     # Example file name: 42007h1989.txt.gz
-    df["compression"] = df["file_name"].str.split('.').str[-1]
-    df["file_extension"] = df["file_name"].str.split('.').str[-2]
-    df["file_root"] = df["file_name"].str.split('.').str[0]
+    df["compression"] = df["file_name"].str.split(".").str[-1]
+    df["file_extension"] = df["file_name"].str.split(".").str[-2]
+    df["file_root"] = df["file_name"].str.split(".").str[0]
     df["station_id"] = df["file_root"].str[:-5]
     df["file_year"] = df["file_root"].str[-4:]
 
@@ -75,7 +76,9 @@ def parse_avail_historical(txt, dataset):
     df["dataset"] = dataset
 
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
-    df["txt_url"] = df.apply(lambda row: _build_txt_url(row['file_name'], row['file_suffix']), axis=1)
+    df["txt_url"] = df.apply(
+        lambda row: _build_txt_url(row["file_name"], row["file_suffix"]), axis=1
+    )
 
     return df
 
@@ -117,6 +120,7 @@ def base_parser(txt):
 
     return df
 
+
 def standard(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
@@ -154,23 +158,20 @@ def raw_spectral(txt):
     df = base_parser(txt)
     return df
 
+
 def spectral_alpha1(txt):
 
     df = base_parser(txt)
 
     return df
 
-def spectral_alpha2(txt):
-
-    df = base_parser(txt)
-
-    return df
 
 def spectral_alpha2(txt):
 
     df = base_parser(txt)
 
     return df
+
 
 def spectral_r1(txt):
 
@@ -178,11 +179,13 @@ def spectral_r1(txt):
 
     return df
 
+
 def spectral_r2(txt):
 
     df = base_parser(txt)
 
     return df
+
 
 def tide(txt):
 
@@ -213,4 +216,3 @@ def tide(txt):
     df.columns = df.columns.str.lower()
 
     return df
-

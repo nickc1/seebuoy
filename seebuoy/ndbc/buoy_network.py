@@ -1,4 +1,3 @@
-
 import requests
 import pandas as pd
 from . import extract
@@ -9,7 +8,7 @@ from .transform import current_year as tr_current
 from .transform import parser
 
 
-DATASET_MAP ={
+DATASET_MAP = {
     "standard": "txt",
     "oceanographic": "ocean",
     "supplemental": "supl",
@@ -19,7 +18,6 @@ DATASET_MAP ={
     "spectral_alpha2": "swdir2",
     "spectral_r1": "swr1",
     "spectral_r2": "swr2",
-    
 }
 
 
@@ -36,7 +34,6 @@ def get_url(url):
 
 
 class BuoyNetwork:
-
     def __init__(self):
         pass
 
@@ -44,7 +41,7 @@ class BuoyNetwork:
 
         txt = extract.buoy_locations()
         df = tr_metadata.parse_buoy_locations(txt)
-        
+
         if add_closest_cities:
             df = tr_metadata.add_closest_cities(df)
 
@@ -74,7 +71,7 @@ class BuoyNetwork:
         self.df_recent = df
 
         return df
-    
+
     def available_current_year_data(self, dataset="standard"):
 
         if dataset == "all":
@@ -88,11 +85,11 @@ class BuoyNetwork:
             df = tr_current.parse_avail_current_year(data, dset)
 
             df_store.append(df)
-        
+
         df = pd.concat(df_store)
 
         self.df_current_yr = df
-        
+
         return df
 
     def available_historic_data(self, dataset="standard"):
@@ -101,11 +98,11 @@ class BuoyNetwork:
             dataset = list(extract.HIST_DATASETS)
         elif isinstance(dataset, str):
             dataset = [dataset]
-        
+
         df_store = []
         for d in dataset:
             txt = extract.avail_historical(d)
-        
+
             df = tr_historic.parse_avail_historical(txt, dataset=d)
             df_store.append(df)
 
@@ -113,21 +110,18 @@ class BuoyNetwork:
         self.df_historic = df
 
         return df
-        
+
     def available_data(self, dataset="standard"):
 
-
         df_recent = self.available_recent_data(dataset)
-        
+
         df_current_yr = self.available_current_year_data(dataset)
-        
 
         df_historic = self.available_historic_data(dataset)
-        
+
         df_recent["data_group"] = "recent"
         df_current_yr["data_group"] = "current_year"
         df_historic["data_group"] = "historic"
-
 
         df = pd.concat([df_recent, df_current_yr, df_historic])
 
@@ -136,13 +130,22 @@ class BuoyNetwork:
         return df
 
     def available_buoy_data(self, station_id):
-        
+
         m = self.df_avail["station_id"] == station_id
         df = self.df_avail[m].copy()
-        
+
         return df
 
-    def get_data(self, station_id, dataset="standard", data_group="all", rename_cols=True, drop_duplicates=True, start_date=None, end_date=None):
+    def get_data(
+        self,
+        station_id,
+        dataset="standard",
+        data_group="all",
+        rename_cols=True,
+        drop_duplicates=True,
+        start_date=None,
+        end_date=None,
+    ):
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
 
@@ -155,7 +158,7 @@ class BuoyNetwork:
             - spectral_alpha2: Spectral Wave Data (alpha2) [swdir2]
             - spectral_r1: Spectral Wave Data (r1) [swr1]
             - spectral_r2: Spectral Wave Data (r2) [swr2]
-            
+
 
             Example usage:
 
@@ -173,10 +176,10 @@ class BuoyNetwork:
 
         m1 = self.df_avail["station_id"] == station_id
         m2 = self.df_avail["dataset"] == dataset
-        df_avail = self.df_avail[m1&m2]
-        
-        df_store = []        
-        
+        df_avail = self.df_avail[m1 & m2]
+
+        df_store = []
+
         for row in df_avail.to_dict(orient="records"):
 
             data_group = row["data_group"]
@@ -200,7 +203,7 @@ class BuoyNetwork:
                 df = parser.raw_spectral(txt, data_group)
 
             elif dataset == "spectral_summary":
-                df = parser.spectral_summary(txt, data_group)        
+                df = parser.spectral_summary(txt, data_group)
 
             elif dataset == "spectral_alpha1":
                 df = parser.spectral_alpha1(txt, data_group)
@@ -214,7 +217,7 @@ class BuoyNetwork:
             elif dataset == "spectral_r2":
                 df = parser.spectral_r2(txt, data_group)
             else:
-                raise ValueError(f"Dataset must be one of {list(DATASET_MAP)}.")           
+                raise ValueError(f"Dataset must be one of {list(DATASET_MAP)}.")
 
             df["url"] = row["url"]
             df["txt_url"] = url
@@ -222,6 +225,6 @@ class BuoyNetwork:
         df = pd.concat(df_store)
 
         if drop_duplicates:
-            df = df[~df.index.duplicated(keep='first')]
+            df = df[~df.index.duplicated(keep="first")]
 
         return df.sort_index()
