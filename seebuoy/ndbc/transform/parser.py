@@ -13,3 +13,13 @@ def standard(txt, data_group, rename_cols=True):
     
     return df
 
+
+def oceanographic(txt, data_group, rename_cols=True):
+
+    if data_group == "recent":
+        df = recent.oceanographic(txt, rename_cols=rename_cols)
+    
+    else:
+        df = historic.oceanographic(txt, rename_cols=rename_cols)
+    
+    return df

@@ -106,7 +106,8 @@ def oceanographic(txt, rename_cols=True):
     df[cols] = df[cols].astype(float)
 
     if rename_cols:
-        df.columns = df.columns.str.lower().map(OCEANOGRAPHIC_MAP)
+        df.columns = df.columns.str.lower()
+        df = df.rename(columns=OCEANOGRAPHIC_MAP)
     
     return df
 

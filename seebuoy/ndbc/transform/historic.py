@@ -22,6 +22,18 @@ STANDARD_MAP = {
     'tide': 'tide',
 }
 
+OCEANOGRAPHIC_MAP = {
+    'depth': 'depth',
+    'otmp': 'ocean_temp',
+    'cond': 'conductivity',
+    'sal': 'salinity',
+    'o2%': 'dissolved_o2_perc',
+    'o2ppm': 'dissolved_o2_ppm',
+    'clcon': 'cholorophyll',
+    'turb': 'turbidity',
+    'ph': 'ph',
+    'eh': 'redox',
+}
 
 
 def _build_txt_url(name, suffix):
@@ -99,5 +111,38 @@ def standard(txt, rename_cols=True):
     df = df.set_index("date")
 
     if rename_cols:
-        df.columns = df.columns.str.lower().map(STANDARD_MAP)
+        df.columns = df.columns.str.lower()
+        df = df.rename(columns=STANDARD_MAP)
+    return df.astype(float)
+
+
+def oceanographic(txt, rename_cols=True):
+    """Parses the filed ending in stdmet."""
+
+    df = pd.read_csv(
+        StringIO(txt),
+        header=0,
+        delim_whitespace=True,
+        na_values=[99, 999, 9999, 99.0, 99.00, 999.0, 9999.0, "99", "99.0", "99.00"],
+    )
+
+    # first row is units, so drop it. data after 2007 has units
+    if df.iloc[0, 0] == "#yr":
+        df = df.drop(df.index[0])
+
+    # data before 2007 does not always have minute
+    if "mm" in df.columns:
+        res = df.iloc[:, :5].astype(str).agg("-".join, axis=1)
+        df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
+        df = df.iloc[:, 5:]
+    else:
+        res = df.iloc[:, :4].astype(str).agg("-".join, axis=1)
+        df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
+        df = df.iloc[:, 4:]
+
+    df = df.set_index("date")
+
+    if rename_cols:
+        df.columns = df.columns.str.lower()
+        df = df.rename(columns=OCEANOGRAPHIC_MAP)
     return df.astype(float)

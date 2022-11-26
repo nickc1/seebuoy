@@ -47,7 +47,7 @@ class Buoy(BuoyNetwork):
         
         return df
     
-    def get_data(self, dataset="standard", data_group="all", start_date=None, end_date=None):
+    def get_data(self, dataset="standard", data_group="all", drop_duplicates=True, start_date=None, end_date=None):
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
 
@@ -119,7 +119,11 @@ class Buoy(BuoyNetwork):
             df["url"] = row["url"]
             df["txt_url"] = url
             df_store.append(df)
+        df = pd.concat(df_store)
 
-        return pd.concat(df_store)
+        if drop_duplicates:
+            df = df[~df.index.duplicated(keep='first')]
+
+        return df.sort_index()
 
         
