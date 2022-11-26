@@ -35,6 +35,13 @@ OCEANOGRAPHIC_MAP = {
     'eh': 'redox',
 }
 
+SUPPLEMENTAL_MAP = {
+    "pres": "pressure",
+    "ptime": "pressure_time",
+    "wspd": "windspeed",
+    "wdir": "wind_direction",
+    "wtime": "wind_time"
+}
 
 def _build_txt_url(name, suffix):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
@@ -84,9 +91,7 @@ def parse_all_avail_historical(data):
     return pd.concat(df_store)
 
 
-def standard(txt, rename_cols=True):
-    """Parses the filed ending in stdmet."""
-
+def base_parser(txt):
     df = pd.read_csv(
         StringIO(txt),
         header=0,
@@ -109,6 +114,13 @@ def standard(txt, rename_cols=True):
         df = df.iloc[:, 4:]
 
     df = df.set_index("date")
+
+    return df
+
+def standard(txt, rename_cols=True):
+    """Parses the filed ending in stdmet."""
+
+    df = base_parser(txt)
 
     if rename_cols:
         df.columns = df.columns.str.lower()
@@ -119,6 +131,61 @@ def standard(txt, rename_cols=True):
 def oceanographic(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
+    df = base_parser(txt)
+
+    if rename_cols:
+        df.columns = df.columns.str.lower()
+        df = df.rename(columns=OCEANOGRAPHIC_MAP)
+    return df.astype(float)
+
+
+def supplemental(txt, rename_cols=True):
+    """Parses the filed ending in stdmet."""
+
+    df = base_parser(txt)
+
+    if rename_cols:
+        df.columns = df.columns.str.lower()
+        df = df.rename(columns=SUPPLEMENTAL_MAP)
+    return df.astype(float)
+
+
+def raw_spectral(txt):
+    df = base_parser(txt)
+    return df
+
+def spectral_alpha1(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+def spectral_alpha2(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+def spectral_alpha2(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+def spectral_r1(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+def spectral_r2(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+def tide(txt):
+
     df = pd.read_csv(
         StringIO(txt),
         header=0,
@@ -136,13 +203,14 @@ def oceanographic(txt, rename_cols=True):
         df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
         df = df.iloc[:, 5:]
     else:
+        # old data has years like 97 instead of 1997
+        df["YY"] = "19" + df["YY"].astype(str)
         res = df.iloc[:, :4].astype(str).agg("-".join, axis=1)
         df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
         df = df.iloc[:, 4:]
 
     df = df.set_index("date")
+    df.columns = df.columns.str.lower()
 
-    if rename_cols:
-        df.columns = df.columns.str.lower()
-        df = df.rename(columns=OCEANOGRAPHIC_MAP)
-    return df.astype(float)
+    return df
+

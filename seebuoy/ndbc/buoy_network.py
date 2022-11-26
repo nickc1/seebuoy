@@ -1,4 +1,5 @@
 
+import requests
 import pandas as pd
 from . import extract
 from .transform import recent as tr_recent
@@ -6,6 +7,33 @@ from .transform import metadata as tr_metadata
 from .transform import historic as tr_historic
 from .transform import current_year as tr_current
 from .transform import parser
+
+
+DATASET_MAP ={
+    "standard": "txt",
+    "oceanographic": "ocean",
+    "supplemental": "supl",
+    "raw_spectral": "data_spec",
+    "spectral_summary": "spec",
+    "spectral_alpha1": "swdir",
+    "spectral_alpha2": "swdir2",
+    "spectral_r1": "swr1",
+    "spectral_r2": "swr2",
+    
+}
+
+
+def get_url(url):
+
+    resp = requests.get(url)
+    if resp.status_code == 200:
+        return resp.text
+    elif resp.status_code == 404:
+        print(f"Dataset not available (404 Error) for url: \n {url}")
+        return None
+    else:
+        raise ValueError(f"Error code {resp.status_code} for url: \n {url}")
+
 
 class BuoyNetwork:
 
@@ -88,20 +116,13 @@ class BuoyNetwork:
         
     def available_data(self, dataset="standard"):
 
-        try:
-            df_recent = self.df_recent_data
-        except AttributeError:
-            df_recent = self.available_recent_data(dataset)
+
+        df_recent = self.available_recent_data(dataset)
         
-        try:
-            df_current_yr = self.df_current_yr
-        except AttributeError:
-            df_current_yr = self.available_current_year_data(dataset)
+        df_current_yr = self.available_current_year_data(dataset)
         
-        try:
-            df_historic = self.df_historic
-        except AttributeError:
-            df_historic = self.available_historic_data(dataset)
+
+        df_historic = self.available_historic_data(dataset)
         
         df_recent["data_group"] = "recent"
         df_current_yr["data_group"] = "current_year"
@@ -114,7 +135,14 @@ class BuoyNetwork:
 
         return df
 
-    def get_data(self, buoy_id, dataset="standard", data_group="all", drop_duplicates=True, start_date=None, end_date=None):
+    def available_buoy_data(self, station_id):
+        
+        m = self.df_avail["station_id"] == station_id
+        df = self.df_avail[m].copy()
+        
+        return df
+
+    def get_data(self, station_id, dataset="standard", data_group="all", rename_cols=True, drop_duplicates=True, start_date=None, end_date=None):
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
 
@@ -143,8 +171,13 @@ class BuoyNetwork:
                 DataFrame containing the requested data.
         """
 
+        m1 = self.df_avail["station_id"] == station_id
+        m2 = self.df_avail["dataset"] == dataset
+        df_avail = self.df_avail[m1&m2]
+        
         df_store = []        
-        for row in self.df_avail.to_dict(orient="records"):
+        
+        for row in df_avail.to_dict(orient="records"):
 
             data_group = row["data_group"]
             url = row["txt_url"]
@@ -155,10 +188,10 @@ class BuoyNetwork:
                 df = pd.DataFrame()
 
             if dataset == "standard":
-                df = parser.standard(txt, data_group, rename_cols=self.rename_cols)
+                df = parser.standard(txt, data_group, rename_cols=rename_cols)
 
             elif dataset == "oceanographic":
-                df = parser.oceanographic(txt, data_group, rename_cols=self.rename_cols)
+                df = parser.oceanographic(txt, data_group, rename_cols=rename_cols)
 
             elif dataset == "supplemental":
                 df = parser.supplemental(txt, data_group)

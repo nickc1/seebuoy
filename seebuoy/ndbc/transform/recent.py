@@ -33,6 +33,13 @@ OCEANOGRAPHIC_MAP = {
     'eh': 'redox',
 }
 
+SUPPLEMENTAL_MAP = {
+    "pres": "pressure",
+    "ptime": "pressure_time",
+    "wspd": "windspeed",
+    "wdir": "wind_direction",
+    "wtime": "wind_time"
+}
 def parse_avail_recent_datasets(txt):
 
     df = pd.read_html(txt)[0]
