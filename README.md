@@ -13,11 +13,23 @@
 seebuoy dumps real time and historic data buoy data from the [NDBC](http://www.ndbc.noaa.gov) into [pandas](https://pandas.pydata.org/) dataframes. It's aim is to be easy to use:
 
 ```python
-from seebuoy import ndbc
+from seebuoy import NDBC
 
-df = ndbc.real_time('41013')
-df.head()
+ndbc = NDBC()
+
+# get all buoys and metadata
+df_buoys = ndbc.buoys()
+
+# list all available data for all buoys
+df_data = ndbc.available_data()
+
+# get all data for a buoy
+station_id = "41037"
+df_buoy = ndbc.get_data(station_id)
 ```
+
+
+
 
  | date                |   WDIR |   WSPD |   GST |   WVHT |   DPD |   APD |   MWD |   PRES |   ATMP |   WTMP |   DEWP |   VIS |   PTDY |   TIDE |
 |:--------------------|-------:|-------:|------:|-------:|------:|------:|------:|-------:|-------:|-------:|-------:|------:|-------:|-------:|
