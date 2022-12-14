@@ -1,23 +1,28 @@
 from io import StringIO
 import pandas as pd
-from .utils import get_url, BASE_URL
+from . import utils
 
-REAL_TIME_DATASETS = {
-    "standard": "txt",
+DATASETS = {
+    "adcp": "adcp",
+    "adcp2": "adcp2",
+    "continuous_wind": "cwind",
+    "water_col_height": "dart",
+    "mmbcur": "mmbcur",
     "oceanographic": "ocean",
+    "rain_hourly": "rain",
+    "rain_10_min": "rain10",
+    "rain_24_hr": "rain24",
+    "solar_radiation": "srad",
+    "standard": "txt",
     "supplemental": "supl",
-    "raw_spectral": "data_spec",
-    "spectral_summary": "spec",
     "spectral_alpha1": "swdir",
     "spectral_alpha2": "swdir2",
     "spectral_r1": "swr1",
     "spectral_r2": "swr2",
-    "solar_radiation": "srad",
-    "water_col_height": "dart",
-    "hourly_rain": "rain",
-    "continous_wind": "cwind",
+    "tide": "wlevel",
     "standard_drift": "drift",
-    "adcp": "adcp",
+    "raw_spectral": "spec",
+    "spectral_summary": "data_spec"
 }
 
 STANDARD_MAP = {
@@ -74,17 +79,17 @@ def extract_avail_real_time():
         41013.txt
     """
 
-    url = f"{BASE_URL}/realtime2"
-    txt = get_url(url)
+    url = f"{utils.BASE_URL}/realtime2"
+    txt = utils.get_url(url)
 
     return txt
 
 def extract_station(station_id, dataset):
 
-    data_ext = REAL_TIME_DATASETS[dataset]
-    url = f'https://www.ndbc.noaa.gov/data/realtime2/{station_id}.{data_ext}'
+    dataset_code = utils.DATASETS[dataset]
+    url = f'https://www.ndbc.noaa.gov/data/realtime2/{station_id}.{dataset_code}'
 
-    txt = get_url(url)
+    txt = utils.get_url(url)
 
     return txt
 
@@ -105,13 +110,15 @@ def parse_avail_real_time(txt):
     df = df[list(col_rename)].rename(columns=col_rename)
 
     df["station_id"] = df["file_name"].str.split(".").str[0]
-    df["file_extension"] = df["file_name"].str.split(".").str[1]
+    df["dataset_code"] = df["file_name"].str.split(".").str[1]
 
-    mapper = {v: k for k, v in REAL_TIME_DATASETS.items()}
-    df["dataset"] = df["file_extension"].map(mapper)
+    mapper = {v: k for k, v in DATASETS.items()}
+    df["dataset"] = df["dataset_code"].map(mapper)
 
     df["url"] = "realtime2/" + df["file_name"]
-    df["txt_url"] = BASE_URL + "/" + df["url"]
+    df["txt_url"] = utils.BASE_URL + "/" + df["url"]
+
+    df["timeframe"] = "real_time"
     return df
 
 # DATASET PARSERS
@@ -367,10 +374,14 @@ def parse_spectral_r2(txt):
 
 # MAIN INTERFACE
 
-def avail_real_time():
+def avail_real_time(dataset="standard"):
 
     txt = extract_avail_real_time()
     df = parse_avail_real_time(txt)
+
+    if dataset != "all":
+        m = df["dataset"] == dataset
+        df = df[m]
 
     return df
 
@@ -405,6 +416,6 @@ def get_station_data(station_id, dataset, rename_cols=True):
     elif dataset == "spectral_r2":
         df = parse_spectral_r2(txt)
     else:
-        raise ValueError(f"Dataset must be one of {list(REAL_TIME_DATASETS)}.")
+        raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
     
     return df

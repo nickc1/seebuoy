@@ -1,9 +1,34 @@
 import pandas as pd
+from . import utils
+
+
+DATASETS = {
+    "adcp": "adcp",
+    "adcp2": "adcp2",
+    "continuous_wind": "cwind",
+    "water_col_height": "dart",
+    "mmbcur": "mmbcur",
+    "oceanographic": "ocean",
+    "rain_hourly": "rain",
+    "rain_10_min": "rain10",
+    "rain_24_hr": "rain24",
+    "solar_radiation": "srad",
+    "standard": "stdmet",
+    "supplemental": "supl",
+    "raw_spectral": "swden",
+    "spectral_alpha1": "swdir",
+    "spectral_alpha2": "swdir2",
+    "spectral_r1": "swr1",
+    "spectral_r2": "swr2",
+    "tide": "wlevel",
+    "standard_drift": "drift",
+}
+
 
 # EXTRACT
 
-def avail_current_year(dataset):
-    file_ext = HIST_DATASETS[dataset]
+def extract_avail_current_year(dataset):
+    file_ext = DATASETS[dataset]
     months = [
         "Jan",
         "Feb",
@@ -22,8 +47,8 @@ def avail_current_year(dataset):
     data = {}
     for month in months:
 
-        url = f"{BASE_URL}/{file_ext}/{month}"
-        txt = get_url(url)
+        url = f"{utils.BASE_URL}/{file_ext}/{month}"
+        txt = utils.get_url(url)
         data[month] = txt
 
     return data
@@ -32,16 +57,16 @@ def avail_current_year(dataset):
 
 # TRANSFORM
 
-def _build_txt_url(name, suffix, month):
+def _build_txt_url(file_name, dataset_code, month):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
-    url = f"{base_url}={name}&dir=data/{suffix}/{month}/"
+    url = f"{base_url}={file_name}&dir=data/{dataset_code}/{month}/"
 
     return url
 
 
 def parse_avail_current_year_month(txt, dataset, month):
 
-    file_suffix = extract.HIST_DATASETS[dataset]
+    dataset_code = DATASETS[dataset]
 
     df = pd.read_html(txt)[0]
     col_rename = {
@@ -54,34 +79,30 @@ def parse_avail_current_year_month(txt, dataset, month):
     df = df.dropna(subset="Last modified")
     df = df[list(col_rename)].rename(columns=col_rename)
 
+    if not len(df):
+        return df
+
+    df["dataset_code"] = dataset_code
+    df["dataset"] = dataset
+    df["url"] = f"{dataset_code}/{month}/" + df["file_name"]
     # if in the current month, the files will not be gzipped and will
     # have a .txt extension instead of .txt.gz
-    if len(df):
-        file_extension = df["file_name"].str.split(".").str[-1].iloc[0]
-    else:
-        file_extension = None
+    file_extension = df["file_name"].str.split(".").str[-1].iloc[0]
 
     if file_extension == "txt":
         df["station_id"] = df["file_name"].str.split(".").str[0]
-        df["file_extension"] = file_extension
+        df["txt_url"] = utils.BASE_URL + "/" + df["url"]
 
     else:
+        # they put year at the end: 4103712022.txt.gz
         df["station_id"] = df["file_name"].str.split(".").str[0].str[:-5]
-        df["file_extension"] = df["file_name"].str.split(".").str[-2]
-
-    df["file_suffix"] = file_suffix
-    df["url"] = f"{file_suffix}/{month}/" + df["file_name"]
-    df["month_name"] = month
-    df["dataset"] = dataset
-    if file_extension == "txt":
-        df["txt_url"] = extract.BASE_URL + "/" + df["url"]
-    else:
         df["txt_url"] = df.apply(
             lambda row: _build_txt_url(
-                row["file_name"], row["file_suffix"], row["month_name"]
+                row["file_name"], dataset_code, month
             ),
             axis=1,
         )
+    df["timeframe"] = "current_year"
     return df
 
 
@@ -94,4 +115,21 @@ def parse_avail_current_year(data, dataset):
 
         df_store.append(df)
 
+    return pd.concat(df_store)
+
+# MAIN INTERFACE
+
+def avail_current_year(dataset="standard"):
+
+    if dataset == "all":
+        datasets = list(DATASETS)
+    else:
+        datasets = [dataset]
+    
+    df_store = []
+    for ds in datasets:
+        data = extract_avail_current_year(ds)
+        df = parse_avail_current_year(data, ds)
+        df_store.append(df)
+    
     return pd.concat(df_store)

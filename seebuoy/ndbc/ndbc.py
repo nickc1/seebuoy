@@ -3,8 +3,8 @@ import pandas as pd
 from . import metadata
 from . import real_time
 from . import current_year
-from . import historic
-from .utils import DATASET_MAP
+from . import historical
+from . import utils
 
 
 class NDBC:
@@ -50,25 +50,27 @@ class NDBC:
         return df
 
 
-    def available_data(self):
+    def available_data(self, dataset="standard"):
 
         if self.timeframe == "all":
-            df_real = real_time.avail_real_time()
-            df_current = current_year.avail_current_year()
-            df_historic = historic.avail_historical()
+            df_real = real_time.avail_real_time(dataset)
+            df_current = current_year.avail_current_year(dataset)
+            df_historic = historical.avail_historical(dataset)
 
             df = pd.concat([df_real, df_current, df_historic])
+        
         elif self.timeframe == "real_time":
-            df = real_time.avail_real_time()
+            df = real_time.avail_real_time(dataset)
         
         elif self.timeframe == "current_year":
-            df = current_year.avail_current_year()
+            df = current_year.avail_current_year(dataset)
         
-        elif self.timeframe == 'historic':
-            df = historic.avail_historic()
+        elif self.timeframe == 'historical':
+            df = historical.avail_historical(dataset)
 
         else:
-            raise ValueError("self.timeframe must be 'all', 'real_time', 'current_year', or 'historic'")
+            raise ValueError("self.timeframe must be 'all', 'real_time', 'current_year', or 'historical'")
+        
         self.df_avail = df
 
         return df
@@ -76,11 +78,10 @@ class NDBC:
 
         return df
 
-    def get_data(
+    def get_station(
         self,
         station_id,
         dataset="standard",
-        data_group="all",
         rename_cols=True,
         drop_duplicates=True,
     ):

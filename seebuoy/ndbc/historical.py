@@ -2,7 +2,7 @@ from io import StringIO
 import pandas as pd
 from .utils import get_url, BASE_URL
 
-HIST_DATASETS = {
+DATASETS = {
     "adcp": "adcp",
     "adcp2": "adcp2",
     "continuous_wind": "cwind",
@@ -67,46 +67,15 @@ SUPPLEMENTAL_MAP = {
 
 # EXTRACT
 
-def avail_historical(dataset):
+def extract_avail_historical(dataset):
 
-    file_ext = HIST_DATASETS[dataset]
+    dataset_code = DATASETS[dataset]
 
     base_url = f"{BASE_URL}/historical"
-    url = f"{base_url}/{file_ext}"
+    url = f"{base_url}/{dataset_code}"
     txt = get_url(url)
 
     return txt
-
-
-def all_avail_historical():
-    """
-    adcp [adcp]: Acoustic Doppler Current Profiler Current Year Historical Data [adcp]
-    adcp2 [adcp2]: Acoustic Doppler Current Profiler Current Year Historical Data [adcp2]
-    continuous_wind: Continuous Winds Current Year Historical Data [cwind]
-    water_col_height: Water Column Height (DART) Current Year Historical Data [dart]
-    mmbcur: No description available [mmbcur]
-    oceanographic: Oceanographic Current Year Historical Data [ocean]
-    rain_hourly: Hourly Rain Current Year Historical Data [rain]
-    rain_10_min: 10 Minute Rain Current Year Historical Data [rain10]
-    rain_24_hr: 24 Hour Rain Current Year Historical Data [rain24]
-    solar_radiation: Solar Radiation Current Year Historical Data [srad]
-    standard: Standard Meteorological Current Year Historical Data [stdmet]
-    supplemental: Supplemental Measurements Current Year Historical Data [supl]
-    raw_spectral: Raw Spectral Wave Current Year Historical Data [swden]
-    spectral_alpha1: Spectral Wave Current Year Historical Data (alpha1) [swdir]
-    spectral_alpha2: Spectral Wave Current Year Historical Data (alpha2) [swdir2]
-    spectral_r1: Spectral Wave Current Year Historical Data (r1) [swr1]
-    spectral_r2: Spectral Wave Current Year Historical Data (r2) [swr2]
-    tide: Tide Current Year Historical Data [wlevel]
-    """
-
-    txt_store = {}
-    for dataset in list(HIST_DATASETS):
-        print(f"Retrieving {dataset}.")
-        txt = avail_historical(dataset)
-        txt_store["dataset"] = txt
-
-    return txt_store
 
 
 # TRANSFORM
@@ -119,7 +88,7 @@ def _build_txt_url(name, suffix):
 
 
 def parse_avail_historical(txt, dataset):
-    file_suffix = HIST_DATASETS[dataset]
+    dataset_code = DATASETS[dataset]
 
     df_raw = pd.read_html(txt)[0]
 
@@ -133,33 +102,20 @@ def parse_avail_historical(txt, dataset):
     df = df[list(col_rename)].rename(columns=col_rename)
 
     # Example file name: 42007h1989.txt.gz
-    df["compression"] = df["file_name"].str.split(".").str[-1]
-    df["file_extension"] = df["file_name"].str.split(".").str[-2]
-    df["file_root"] = df["file_name"].str.split(".").str[0]
-    df["station_id"] = df["file_root"].str[:-5]
-    df["file_year"] = df["file_root"].str[-4:]
+    df["station_id"] = df["file_name"].str.split(".").str[0].str[:-5]
+    df["file_year"] = df["file_name"].str.split(".").str[0].str[-4:]
 
-    df["url"] = f"historical/{file_suffix}/" + df["file_name"]
-    df["file_suffix"] = file_suffix
+    df["url"] = f"historical/{dataset_code}/" + df["file_name"]
+    df["dataset_code"] = dataset_code
     df["dataset"] = dataset
 
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
     df["txt_url"] = df.apply(
-        lambda row: _build_txt_url(row["file_name"], row["file_suffix"]), axis=1
+        lambda row: _build_txt_url(row["file_name"], row["dataset_code"]), axis=1
     )
 
     return df
 
-
-def parse_all_avail_historical(data):
-
-    df_store = []
-    for dataset, txt in data.items():
-
-        df = parse_avail_historical(txt, dataset)
-        df_store.append(df)
-
-    return pd.concat(df_store)
 
 
 def base_parser(txt):
@@ -284,3 +240,41 @@ def tide(txt):
     df.columns = df.columns.str.lower()
 
     return df
+
+# MAIN INTERFACE
+
+def avail_historical(dataset):
+    """
+    adcp [adcp]: Acoustic Doppler Current Profiler Current Year Historical Data [adcp]
+    adcp2 [adcp2]: Acoustic Doppler Current Profiler Current Year Historical Data [adcp2]
+    continuous_wind: Continuous Winds Current Year Historical Data [cwind]
+    water_col_height: Water Column Height (DART) Current Year Historical Data [dart]
+    mmbcur: No description available [mmbcur]
+    oceanographic: Oceanographic Current Year Historical Data [ocean]
+    rain_hourly: Hourly Rain Current Year Historical Data [rain]
+    rain_10_min: 10 Minute Rain Current Year Historical Data [rain10]
+    rain_24_hr: 24 Hour Rain Current Year Historical Data [rain24]
+    solar_radiation: Solar Radiation Current Year Historical Data [srad]
+    standard: Standard Meteorological Current Year Historical Data [stdmet]
+    supplemental: Supplemental Measurements Current Year Historical Data [supl]
+    raw_spectral: Raw Spectral Wave Current Year Historical Data [swden]
+    spectral_alpha1: Spectral Wave Current Year Historical Data (alpha1) [swdir]
+    spectral_alpha2: Spectral Wave Current Year Historical Data (alpha2) [swdir2]
+    spectral_r1: Spectral Wave Current Year Historical Data (r1) [swr1]
+    spectral_r2: Spectral Wave Current Year Historical Data (r2) [swr2]
+    tide: Tide Current Year Historical Data [wlevel]
+    """
+
+    if dataset == "all":
+        datasets = list(DATASETS)
+    else:
+        datasets = [dataset]
+
+    df_store = []
+    for ds in datasets:
+        
+        txt = extract_avail_historical(ds)
+        df = parse_avail_historical(txt, ds)
+        df_store.append(df)
+
+    return pd.concat(df_store)
