@@ -32,7 +32,7 @@ class NDBC:
 
     """
 
-    def __init__(self, timeframe="all"):
+    def __init__(self, timeframe="real_time"):
 
         self.timeframe = timeframe
 
@@ -50,9 +50,9 @@ class NDBC:
         return df
 
 
-    def available_data(self, dataset="standard"):
+    def available_data(self, dataset="standard", station_id=None):
 
-        if self.timeframe == "all":
+        if self.timeframe == "historical":
             df_real = real_time.avail_real_time(dataset)
             df_current = current_year.avail_current_year(dataset)
             df_historic = historical.avail_historical(dataset)
@@ -62,10 +62,10 @@ class NDBC:
         elif self.timeframe == "real_time":
             df = real_time.avail_real_time(dataset)
         
-        elif self.timeframe == "current_year":
+        elif self.timeframe == "current_year_only":
             df = current_year.avail_current_year(dataset)
         
-        elif self.timeframe == 'historical':
+        elif self.timeframe == 'historical_only':
             df = historical.avail_historical(dataset)
 
         else:
@@ -73,10 +73,12 @@ class NDBC:
         
         self.df_avail = df
 
+        if station_id is not None:
+            m = df["station_id"] == station_id
+            df = df[m].copy()
+
         return df
 
-
-        return df
 
     def get_station(
         self,
@@ -121,46 +123,24 @@ class NDBC:
 
         for row in df_avail.to_dict(orient="records"):
 
-            data_group = row["data_group"]
-            url = row["txt_url"]
+            timeframe = row["timeframe"]
+            txt_url = row["txt_url"]
+            dataset = row["dataset"]
 
-            txt = get_url(url)
+            if timeframe == "real_time":
+                df = real_time.get_dataset(txt_url, dataset, rename_cols=rename_cols)
+            
+            elif timeframe == "current_year":
+                df = current_year.get_dataset(txt_url, dataset, rename_cols=rename_cols)
+            
+            elif timeframe == "historical":
+                df = historical.get_dataset(txt_url, dataset, rename_cols=rename_cols)
 
-            if txt is None:
-                df = pd.DataFrame()
-
-            if dataset == "standard":
-                df = parser.standard(txt, data_group, rename_cols=rename_cols)
-
-            elif dataset == "oceanographic":
-                df = parser.oceanographic(txt, data_group, rename_cols=rename_cols)
-
-            elif dataset == "supplemental":
-                df = parser.supplemental(txt, data_group)
-
-            elif dataset == "raw_spectral":
-                df = parser.raw_spectral(txt, data_group)
-
-            elif dataset == "spectral_summary":
-                df = parser.spectral_summary(txt, data_group)
-
-            elif dataset == "spectral_alpha1":
-                df = parser.spectral_alpha1(txt, data_group)
-
-            elif dataset == "spectral_alpha2":
-                df = parser.spectral_alpha2(txt, data_group)
-
-            elif dataset == "spectral_r1":
-                df = parser.spectral_r1(txt, data_group)
-
-            elif dataset == "spectral_r2":
-                df = parser.spectral_r2(txt, data_group)
             else:
-                raise ValueError(f"Dataset must be one of {list(DATASET_MAP)}.")
-
-            df["url"] = row["url"]
-            df["txt_url"] = url
+                raise ValueError("timeframe is not real_time, current_year, or historical.")
+            
             df_store.append(df)
+
         df = pd.concat(df_store)
 
         if drop_duplicates:

@@ -1,4 +1,6 @@
+from datetime import datetime
 import pandas as pd
+from . import historical
 from . import utils
 
 
@@ -24,35 +26,35 @@ DATASETS = {
     "standard_drift": "drift",
 }
 
+MONTHS = {
+    "Jan": 1,
+    "Feb": 2,
+    "Mar": 3,
+    "Apr": 4,
+    "May": 5,
+    "Jun": 6,
+    "Jul": 7,
+    "Aug": 8,
+    "Sep": 9,
+    "Oct": 10,
+    "Nov": 11,
+    "Dec": 12,
+}
 
 # EXTRACT
 
 def extract_avail_current_year(dataset):
-    file_ext = DATASETS[dataset]
-    months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ]
+
+    dataset_code = DATASETS[dataset]
 
     data = {}
-    for month in months:
+    for month in MONTHS:
 
-        url = f"{utils.BASE_URL}/{file_ext}/{month}"
+        url = f"{utils.BASE_URL}/{dataset_code}/{month}"
         txt = utils.get_url(url)
         data[month] = txt
 
     return data
-
 
 
 # TRANSFORM
@@ -133,3 +135,39 @@ def avail_current_year(dataset="standard"):
         df_store.append(df)
     
     return pd.concat(df_store)
+
+
+def get_dataset(txt_url, dataset, rename_cols=True):
+
+    txt = utils.get_url(txt_url)
+
+    if dataset == "standard":
+        df = historical.parse_standard(txt, rename_cols=rename_cols)
+
+    elif dataset == "oceanographic":
+        df = historical.parse_oceanographic(txt, rename_cols=rename_cols)
+
+    elif dataset == "supplemental":
+        df = historical.parse_supplemental(txt)
+
+    elif dataset == "raw_spectral":
+        df = historical.parse_raw_spectral(txt)
+
+    elif dataset == "spectral_summary":
+        df = historical.parse_spectral_summary(txt)
+
+    elif dataset == "spectral_alpha1":
+        df = historical.parse_spectral_alpha1(txt)
+
+    elif dataset == "spectral_alpha2":
+        df = historical.parse_spectral_alpha2(txt)
+
+    elif dataset == "spectral_r1":
+        df = historical.parse_spectral_r1(txt)
+
+    elif dataset == "spectral_r2":
+        df = historical.parse_spectral_r2(txt)
+    else:
+        raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
+    
+    return df

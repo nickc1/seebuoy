@@ -1,6 +1,6 @@
 from io import StringIO
 import pandas as pd
-from .utils import get_url, BASE_URL
+from . import utils
 
 DATASETS = {
     "adcp": "adcp",
@@ -71,9 +71,9 @@ def extract_avail_historical(dataset):
 
     dataset_code = DATASETS[dataset]
 
-    base_url = f"{BASE_URL}/historical"
+    base_url = f"{utils.BASE_URL}/historical"
     url = f"{base_url}/{dataset_code}"
-    txt = get_url(url)
+    txt = utils.get_url(url)
 
     return txt
 
@@ -108,6 +108,7 @@ def parse_avail_historical(txt, dataset):
     df["url"] = f"historical/{dataset_code}/" + df["file_name"]
     df["dataset_code"] = dataset_code
     df["dataset"] = dataset
+    df["timeframe"] = "historical"
 
     # https://www.ndbc.noaa.gov/view_text_file.php?filename=41037h2005.txt.gz&dir=data/historical/stdmet/
     df["txt_url"] = df.apply(
@@ -123,29 +124,36 @@ def base_parser(txt):
         StringIO(txt),
         header=0,
         delim_whitespace=True,
-        na_values=[99, 999, 9999, 99.0, 99.00, 999.0, 9999.0, "99", "99.0", "99.00"],
+        dtype=str,
+        na_values=["99", "99.0", "99.00", "999.0"],
     )
 
     # first row is units, so drop it. data after 2007 has units
     if df.iloc[0, 0] == "#yr":
         df = df.drop(df.index[0])
 
-    # data before 2007 does not always have minute
+    # data after 2007 has a minute columns
     if "mm" in df.columns:
-        res = df.iloc[:, :5].astype(str).agg("-".join, axis=1)
+        res = df.iloc[:, :5].agg("-".join, axis=1)
         df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H-%M")
         df = df.iloc[:, 5:]
     else:
-        res = df.iloc[:, :4].astype(str).agg("-".join, axis=1)
-        df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
-        df = df.iloc[:, 4:]
+        try:
+            res = df.iloc[:, :4].agg("-".join, axis=1)
+            df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
+            df = df.iloc[:, 4:]
+        except:
+            # really old data uses two year e.g. 73 instead of 1973
+            res = df.iloc[:, :4].agg("-".join, axis=1)
+            df["date"] = pd.to_datetime(res, format="%y-%m-%d-%H")
+            df = df.iloc[:, 4:]
 
     df = df.set_index("date")
-
+    df = df.astype(float)
     return df
 
 
-def standard(txt, rename_cols=True):
+def parse_standard(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
     df = base_parser(txt)
@@ -156,7 +164,7 @@ def standard(txt, rename_cols=True):
     return df.astype(float)
 
 
-def oceanographic(txt, rename_cols=True):
+def parse_oceanographic(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
     df = base_parser(txt)
@@ -167,7 +175,7 @@ def oceanographic(txt, rename_cols=True):
     return df.astype(float)
 
 
-def supplemental(txt, rename_cols=True):
+def parse_supplemental(txt, rename_cols=True):
     """Parses the filed ending in stdmet."""
 
     df = base_parser(txt)
@@ -178,40 +186,40 @@ def supplemental(txt, rename_cols=True):
     return df.astype(float)
 
 
-def raw_spectral(txt):
+def parse_raw_spectral(txt):
     df = base_parser(txt)
     return df
 
 
-def spectral_alpha1(txt):
-
-    df = base_parser(txt)
-
-    return df
-
-
-def spectral_alpha2(txt):
+def parse_spectral_alpha1(txt):
 
     df = base_parser(txt)
 
     return df
 
 
-def spectral_r1(txt):
+def parse_spectral_alpha2(txt):
 
     df = base_parser(txt)
 
     return df
 
 
-def spectral_r2(txt):
+def parse_spectral_r1(txt):
 
     df = base_parser(txt)
 
     return df
 
 
-def tide(txt):
+def parse_spectral_r2(txt):
+
+    df = base_parser(txt)
+
+    return df
+
+
+def parse_tide(txt):
 
     df = pd.read_csv(
         StringIO(txt),
@@ -278,3 +286,39 @@ def avail_historical(dataset):
         df_store.append(df)
 
     return pd.concat(df_store)
+
+
+def get_dataset(txt_url, dataset, rename_cols=True):
+
+    txt = utils.get_url(txt_url)
+
+    if dataset == "standard":
+        df = parse_standard(txt, rename_cols=rename_cols)
+
+    elif dataset == "oceanographic":
+        df = parse_oceanographic(txt, rename_cols=rename_cols)
+
+    elif dataset == "supplemental":
+        df = parse_supplemental(txt)
+
+    elif dataset == "raw_spectral":
+        df = parse_raw_spectral(txt)
+
+    # elif dataset == "spectral_summary":
+    #     df = parse_spectral_summary(txt)
+
+    elif dataset == "spectral_alpha1":
+        df = parse_spectral_alpha1(txt)
+
+    elif dataset == "spectral_alpha2":
+        df = parse_spectral_alpha2(txt)
+
+    elif dataset == "spectral_r1":
+        df = parse_spectral_r1(txt)
+
+    elif dataset == "spectral_r2":
+        df = parse_spectral_r2(txt)
+    else:
+        raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
+    
+    return df

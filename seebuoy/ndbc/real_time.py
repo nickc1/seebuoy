@@ -385,9 +385,9 @@ def avail_real_time(dataset="standard"):
 
     return df
 
-def get_station_data(station_id, dataset, rename_cols=True):
+def get_dataset(txt_url, dataset, rename_cols=True):
 
-    txt = extract_station(station_id, dataset)
+    txt = utils.get_url(txt_url)
 
     if dataset == "standard":
         df = parse_standard(txt, rename_cols=rename_cols)
