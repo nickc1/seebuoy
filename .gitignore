@@ -10,5 +10,4 @@ __pycache__/
 /site
 
 # notebooks
-*.ipynb
 .ipynb_checkpoints/
