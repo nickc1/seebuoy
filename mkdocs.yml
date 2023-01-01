@@ -1,26 +1,23 @@
 site_name: seebuoy
-site_description: seebuoy, ocean data, wave data, python, buoy data
+site_description: seebuoy, ocean data, wave data, python, buoy data, ndbc
 
 nav:
     - Home: index.md
     - NDBC: ndbc.md
     - Install: install.md
-    - API: api.md
     - Contributing: contributing.md
 
 theme:
   name: 'material'
-  palette:
-    primary: 'light-blue'
-    accent: 'amber'
   logo: 'img/icon-white.png'
   favicon: 'img/favicon.png'
 
+extra_css:
+  - stylesheets/extra.css
+
 plugins:
   - search
-  - mkdocstrings:
-      watch:
-        - seebuoy
+  - mkdocstrings
 
 repo_name: nickc1/seebuoy
 repo_url: https://github.com/nickc1/seebuoy
@@ -28,4 +25,6 @@ edit_uri: ''
 
 markdown_extensions:
   - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
   - pymdownx.superfences

@@ -1,41 +1,37 @@
 import pandas as pd
-from seebuoy import ndbc
+from seebuoy import NDBC
 
 
-def test_real_time():
-    datasets = [
-        "data_spec",
-        "ocean",
-        "spec",
-        "supl",
-        "swdir",
-        "swdir2",
-        "swr1",
-        "swr2",
-        "txt",
-    ]
-    buoy = 41013
+def test_stations():
 
-    for d in datasets:
-        df = ndbc.real_time(buoy, d)
-        # should return a df or None
-        dtype = type(df)
-        assert dtype == pd.core.frame.DataFrame or df is None
+    ndbc = NDBC()
+    df = ndbc.stations()
+
+    assert len(df) > 1000
 
 
-def test_available_downloads():
-
-    df = ndbc.available_datasets(41037)
-    assert len(df) > 0
-
-
-def test_historic():
-    df = ndbc.historic(41037, 2018, "stdmet")
-    assert len(df) > 0
+def test_available_data():
+    
+    ndbc = NDBC()
+    df = ndbc.available_data(dataset="all")
+    
+    assert len(df) > 100
 
 
-def test_all_historic():
+def test_get_data():
+    
+    ndbc = NDBC()
+    df = ndbc.available_data(dataset="all")
+    df = ndbc.get_data("41024", dataset="oceanographic")
 
-    df = ndbc.all_historic(41037, "stdmet")
+    assert len(df) > 10
 
-    assert len(df) > 0
+
+def test_historical():
+
+    ndbc = NDBC(timeframe="historical")
+    df_avail = ndbc.available_data(station_id="41002")
+    df_data = ndbc.get_data("41002")
+
+    assert len(df_avail) > 40
+    assert len(df_data) > 100_000
