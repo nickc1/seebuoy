@@ -21,7 +21,9 @@ def extract_buoy_locations():
 
     return txt
 
+
 # TRANSFORM
+
 
 def parse_buoy_owners(txt):
 
@@ -82,7 +84,9 @@ def add_owners(df_buoys, df_owners):
 
     return df
 
+
 # MAIN INTERFACE
+
 
 def buoy_info(closest_cities=True, owners=True):
 
@@ -91,10 +95,10 @@ def buoy_info(closest_cities=True, owners=True):
 
     if closest_cities:
         df = add_closest_cities(df)
-    
+
     if owners:
         txt = extract_buoy_owners()
         df_owners = parse_buoy_owners(txt)
         df = add_owners(df, df_owners)
-    
+
     return df

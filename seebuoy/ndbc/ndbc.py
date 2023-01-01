@@ -1,4 +1,3 @@
-
 import pandas as pd
 from . import metadata
 from . import real_time
@@ -37,14 +36,13 @@ class NDBC:
 
     def __init__(self, timeframe="real_time"):
         """Initialize NDBC for a specific time frame.
-        
+
         Args:
-            timeframe (str): The timeframe for which to pull data. Can be 
-            'real_time', 'historical', 'historical_only', 'current_year_only'. 
+            timeframe (str): The timeframe for which to pull data. Can be
+            'real_time', 'historical', 'historical_only', 'current_year_only'.
 
         """
         self.timeframe = timeframe
-
 
     def stations(self, station_id=None, closest_cities=True, owners=True):
         """Pull data for all NDBC stations.
@@ -53,7 +51,7 @@ class NDBC:
             station_id (str): The id of the station.
             closest_cities (bool): Joins on the closest cities and states.
             owners (bool): Joins on the owners of the buoys.
-        
+
         Returns:
             Pandas dataframe of station information.
         """
@@ -65,9 +63,8 @@ class NDBC:
         if station_id:
             m = df["station_id"] == station_id
             df = df[m]
-        
-        return df
 
+        return df
 
     def available_data(self, dataset="standard", station_id=None):
         """Lists the available data for the given parameters.
@@ -77,7 +74,7 @@ class NDBC:
             pass "all" to pull all available data.
             station_id (str): The station_id to return. If None, returns data
             for all stations.
-        
+
         Returns:
             Pandas dataframe of availble data.
         """
@@ -87,19 +84,21 @@ class NDBC:
             df_historic = historical.avail_historical(dataset)
 
             df = pd.concat([df_real, df_current, df_historic])
-        
+
         elif self.timeframe == "real_time":
             df = real_time.avail_real_time(dataset)
-        
+
         elif self.timeframe == "current_year_only":
             df = current_year.avail_current_year(dataset)
-        
-        elif self.timeframe == 'historical_only':
+
+        elif self.timeframe == "historical_only":
             df = historical.avail_historical(dataset)
 
         else:
-            raise ValueError("self.timeframe must be 'all', 'real_time', 'current_year', or 'historical'")
-        
+            raise ValueError(
+                "self.timeframe must be 'all', 'real_time', 'current_year', or 'historical'"
+            )
+
         self.df_avail = df
 
         if station_id is not None:
@@ -107,7 +106,6 @@ class NDBC:
             df = df[m].copy()
 
         return df
-
 
     def get_data(
         self,
@@ -117,15 +115,15 @@ class NDBC:
         drop_duplicates=True,
     ):
         """Pull data for a single station.
-        
+
         Args:
-            station_id (str): The station_id to for which to pull data. 
+            station_id (str): The station_id to for which to pull data.
             dataset (str): The dataset to pull.
             rename_cols (bool): Rename the columns to more readable titles.
             drop_duplicates (bool): If pulling historical data, there can be
             duplicate records in the current year and real time datasets. This
             argument only keeps one
-        
+
         Returns:
             Pandas dataframe of data for the given station.
 
@@ -145,16 +143,18 @@ class NDBC:
 
             if timeframe == "real_time":
                 df = real_time.get_dataset(txt_url, dataset, rename_cols=rename_cols)
-            
+
             elif timeframe == "current_year":
                 df = current_year.get_dataset(txt_url, dataset, rename_cols=rename_cols)
-            
+
             elif timeframe == "historical":
                 df = historical.get_dataset(txt_url, dataset, rename_cols=rename_cols)
 
             else:
-                raise ValueError("timeframe is not real_time, current_year, or historical.")
-            
+                raise ValueError(
+                    "timeframe is not real_time, current_year, or historical."
+                )
+
             df_store.append(df)
 
         df = pd.concat(df_store)

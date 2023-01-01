@@ -22,7 +22,7 @@ DATASETS = {
     "tide": "wlevel",
     "standard_drift": "drift",
     "raw_spectral": "spec",
-    "spectral_summary": "data_spec"
+    "spectral_summary": "data_spec",
 }
 
 STANDARD_MAP = {
@@ -66,6 +66,7 @@ SUPPLEMENTAL_MAP = {
 
 # EXTRACT
 
+
 def extract_avail_real_time():
     """All recent data (realtime) is put into the same folder. For example:
     realtime2/
@@ -84,10 +85,11 @@ def extract_avail_real_time():
 
     return txt
 
+
 def extract_station(station_id, dataset):
 
     dataset_code = utils.DATASETS[dataset]
-    url = f'https://www.ndbc.noaa.gov/data/realtime2/{station_id}.{dataset_code}'
+    url = f"https://www.ndbc.noaa.gov/data/realtime2/{station_id}.{dataset_code}"
 
     txt = utils.get_url(url)
 
@@ -121,7 +123,9 @@ def parse_avail_real_time(txt):
     df["timeframe"] = "real_time"
     return df
 
+
 # DATASET PARSERS
+
 
 def parse_standard(txt, rename_cols=True):
     """Parse the dataset that ends in txt"""
@@ -372,7 +376,9 @@ def parse_spectral_r2(txt):
 
     return specs
 
+
 # MAIN INTERFACE
+
 
 def avail_real_time(dataset="standard"):
 
@@ -384,6 +390,7 @@ def avail_real_time(dataset="standard"):
         df = df[m]
 
     return df
+
 
 def get_dataset(txt_url, dataset, rename_cols=True):
 
@@ -417,5 +424,5 @@ def get_dataset(txt_url, dataset, rename_cols=True):
         df = parse_spectral_r2(txt)
     else:
         raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
-    
+
     return df

@@ -43,6 +43,7 @@ MONTHS = {
 
 # EXTRACT
 
+
 def extract_avail_current_year(dataset):
 
     dataset_code = DATASETS[dataset]
@@ -58,6 +59,7 @@ def extract_avail_current_year(dataset):
 
 
 # TRANSFORM
+
 
 def _build_txt_url(file_name, dataset_code, month):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
@@ -99,9 +101,7 @@ def parse_avail_current_year_month(txt, dataset, month):
         # they put year at the end: 4103712022.txt.gz
         df["station_id"] = df["file_name"].str.split(".").str[0].str[:-5]
         df["txt_url"] = df.apply(
-            lambda row: _build_txt_url(
-                row["file_name"], dataset_code, month
-            ),
+            lambda row: _build_txt_url(row["file_name"], dataset_code, month),
             axis=1,
         )
     df["timeframe"] = "current_year"
@@ -119,7 +119,9 @@ def parse_avail_current_year(data, dataset):
 
     return pd.concat(df_store)
 
+
 # MAIN INTERFACE
+
 
 def avail_current_year(dataset="standard"):
 
@@ -127,13 +129,13 @@ def avail_current_year(dataset="standard"):
         datasets = list(DATASETS)
     else:
         datasets = [dataset]
-    
+
     df_store = []
     for ds in datasets:
         data = extract_avail_current_year(ds)
         df = parse_avail_current_year(data, ds)
         df_store.append(df)
-    
+
     return pd.concat(df_store)
 
 
@@ -169,5 +171,5 @@ def get_dataset(txt_url, dataset, rename_cols=True):
         df = historical.parse_spectral_r2(txt)
     else:
         raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
-    
+
     return df

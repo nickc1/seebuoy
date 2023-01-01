@@ -67,6 +67,7 @@ SUPPLEMENTAL_MAP = {
 
 # EXTRACT
 
+
 def extract_avail_historical(dataset):
 
     dataset_code = DATASETS[dataset]
@@ -79,6 +80,7 @@ def extract_avail_historical(dataset):
 
 
 # TRANSFORM
+
 
 def _build_txt_url(name, suffix):
     base_url = "https://www.ndbc.noaa.gov/view_text_file.php?filename"
@@ -118,7 +120,6 @@ def parse_avail_historical(txt, dataset):
     return df
 
 
-
 def base_parser(txt):
     df = pd.read_csv(
         StringIO(txt),
@@ -142,7 +143,7 @@ def base_parser(txt):
             res = df.iloc[:, :4].agg("-".join, axis=1)
             df["date"] = pd.to_datetime(res, format="%Y-%m-%d-%H")
             df = df.iloc[:, 4:]
-        except:
+        except ValueError:
             # really old data uses two year e.g. 73 instead of 1973
             res = df.iloc[:, :4].agg("-".join, axis=1)
             df["date"] = pd.to_datetime(res, format="%y-%m-%d-%H")
@@ -249,7 +250,9 @@ def parse_tide(txt):
 
     return df
 
+
 # MAIN INTERFACE
+
 
 def avail_historical(dataset):
     """
@@ -280,7 +283,7 @@ def avail_historical(dataset):
 
     df_store = []
     for ds in datasets:
-        
+
         txt = extract_avail_historical(ds)
         df = parse_avail_historical(txt, ds)
         df_store.append(df)
@@ -320,5 +323,5 @@ def get_dataset(txt_url, dataset, rename_cols=True):
         df = parse_spectral_r2(txt)
     else:
         raise ValueError(f"Dataset must be one of {list(DATASETS)}.")
-    
+
     return df
