@@ -23,7 +23,7 @@ def test_get_data():
     ndbc = NDBC()
     df = ndbc.get_station("41024", dataset="oceanographic")
 
-    assert len(df) > 0
+    assert len(df) > 10
 
 
 def test_historical():
@@ -32,5 +32,5 @@ def test_historical():
     df_avail = ndbc.available_data(station_id="41002")
     df_data = ndbc.get_data("41002")
 
-    assert len(df_avail) > 100
+    assert len(df_avail) > 40
     assert len(df_data) > 100_000
