@@ -21,7 +21,7 @@ def test_available_data():
 def test_get_data():
     
     ndbc = NDBC()
-    df = ndbc.get_station("41024", dataset="oceanographic")
+    df = ndbc.get_data("41024", dataset="oceanographic")
 
     assert len(df) > 10
 
