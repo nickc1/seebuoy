@@ -1,11 +1,10 @@
 site_name: seebuoy
-site_description: seebuoy, ocean data, wave data, python, buoy data
+site_description: seebuoy, ocean data, wave data, python, buoy data, ndbc
 
 nav:
     - Home: index.md
     - NDBC: ndbc.md
     - Install: install.md
-    - API: api.md
     - Contributing: contributing.md
 
 theme:
