@@ -3,28 +3,33 @@ name = "seebuoy"
 version = "0.1.3"
 description = "Remote data access for oceanographic data."
 authors = ["nickc1 <nickcortale@gmail.com>"]
+readme = "README.md"
+packages = [{include = "seebuoy"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9.11"
 pandas = "^1.1.2"
 requests = "^2.24.0"
 beautifulsoup4 = "^4.9.3"
 lxml = "^4.9.1"
 scikit-learn = "^1.1.3"
+mkdocstrings = {extras = ["python"], version = "^0.19.1"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
+mkdocs-material = "^8.5.11"
 pytest = "^6.1.0"
 black = "^22.10.0"
 flake8 = "^3.8.3"
-mkdocs = "^1.1.2"
-mkdocs-material = "^5.5.14"
 ipython = "^7.18.1"
 ipykernel = "^5.3.4"
 seaborn = "^0.11.0"
 tabulate = "^0.8.7"
-mkdocstrings = "^0.13.6"
 jupyterlab = "^3.5.0"
+mkdocstrings = "^0.19.1"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+

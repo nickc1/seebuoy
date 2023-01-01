@@ -1,0 +1,10 @@
+:root {
+    --md-primary-fg-color:        #264653;
+    --md-primary-fg-color--light: #EAE2B7;
+    --md-primary-fg-color--dark:  #D62828;
+    --md-text-link-color: #D62828;
+  }
+
+.md-content {
+--md-typeset-a-color: #2A9D8F;
+}

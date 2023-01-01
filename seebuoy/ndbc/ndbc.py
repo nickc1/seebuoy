@@ -80,7 +80,7 @@ class NDBC:
         return df
 
 
-    def get_station(
+    def get_data(
         self,
         station_id,
         dataset="standard",
@@ -90,15 +90,15 @@ class NDBC:
         """Get recent data from the NDBC. Most buoys have six different data sources
         to pull from:
 
-            - standard: Standard Meteorological Data. [txt]
-            - oceanographic: Oceanographic Data [ocean]
-            - supplemental: Supplemental Measurements Data [supl]
-            - raw_spectral: Raw Spectral Wave Data. [data_spec]
-            - spectral_summary: Spectral Wave Summary Data [spec]
-            - spectral_alpha1: Spectral Wave Data (alpha1) [swdir]
-            - spectral_alpha2: Spectral Wave Data (alpha2) [swdir2]
-            - spectral_r1: Spectral Wave Data (r1) [swr1]
-            - spectral_r2: Spectral Wave Data (r2) [swr2]
+        - standard: Standard Meteorological Data. [txt]
+        - oceanographic: Oceanographic Data [ocean]
+        - supplemental: Supplemental Measurements Data [supl]
+        - raw_spectral: Raw Spectral Wave Data. [data_spec]
+        - spectral_summary: Spectral Wave Summary Data [spec]
+        - spectral_alpha1: Spectral Wave Data (alpha1) [swdir]
+        - spectral_alpha2: Spectral Wave Data (alpha2) [swdir2]
+        - spectral_r1: Spectral Wave Data (r1) [swr1]
+        - spectral_r2: Spectral Wave Data (r2) [swr2]
 
 
             Example usage:

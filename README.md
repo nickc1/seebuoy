@@ -3,11 +3,9 @@
   <a href="#"><img src="https://raw.githubusercontent.com/nickc1/seebuoy/master/docs/img/seebuoy_logo_text.png" alt="seebuoy"></a>
 </p>
 <p align="center">
-<em>Easily access real time and historical data from the [National Data Buoy Center](http://www.ndbc.noaa.gov).</em>
+<em>Easily access real time and historical data from the <a href="http://www.ndbc.noaa.gov">National Data Buoy Center</a>.</em>
 </p>
-<p align="center">
-  <a href="https://seebuoy.com">DOCUMENTATION</a>
-</p>
+
 ---
 
 seebuoy provides an easy to use python interface to the [National Data Buoy Center](http://www.ndbc.noaa.gov). Easily access realtime data, historical data, and metadata about the buoys.
