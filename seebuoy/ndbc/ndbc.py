@@ -8,36 +8,55 @@ from . import utils
 
 
 class NDBC:
-    """Interface to the data available from the NDBC. The available datasets
-    supported are:
+    """Main interface to the National Data Buoy Center.
 
-    adcp: Acoustic Doppler Current Profiler Current Year Historical Data [adcp]
-    adcp2: Acoustic Doppler Current Profiler Current Year Historical Data [adcp2]
-    continuous_wind: Continuous Winds Current Year Historical Data [cwind]
-    water_col_height: Water Column Height (DART) Current Year Historical Data [dart]
-    mmbcur: No description available [mmbcur]
-    oceanographic: Oceanographic Current Year Historical Data [ocean]
-    rain_hourly: Hourly Rain Current Year Historical Data [rain]
-    rain_10_min: 10 Minute Rain Current Year Historical Data [rain10]
-    rain_24_hr: 24 Hour Rain Current Year Historical Data [rain24]
-    solar_radiation: Solar Radiation Current Year Historical Data [srad]
-    standard: Standard Meteorological Current Year Historical Data [stdmet]
-    supplemental: Supplemental Measurements Current Year Historical Data [supl]
-    raw_spectral: Raw Spectral Wave Current Year Historical Data [swden]
-    spectral_alpha1: Spectral Wave Current Year Historical Data (alpha1) [swdir]
-    spectral_alpha2: Spectral Wave Current Year Historical Data (alpha2) [swdir2]
-    spectral_r1: Spectral Wave Current Year Historical Data (r1) [swr1]
-    spectral_r2: Spectral Wave Current Year Historical Data (r2) [swr2]
-    tide: Tide Current Year Historical Data [wlevel]
+    NDBC provides the following datasets. Note that each station has a subset
+    of this data and not all data is continuous. Buoys can go down from time to
+    time.
+
+    - adcp: Acoustic Doppler Current Profiler Current Year Historical Data [adcp]
+    - adcp2: Acoustic Doppler Current Profiler Current Year Historical Data [adcp2]
+    - continuous_wind: Continuous Winds Current Year Historical Data [cwind]
+    - water_col_height: Water Column Height (DART) Current Year Historical Data [dart]
+    - mmbcur: No description available [mmbcur]
+    - oceanographic: Oceanographic Current Year Historical Data [ocean]
+    - rain_hourly: Hourly Rain Current Year Historical Data [rain]
+    - rain_10_min: 10 Minute Rain Current Year Historical Data [rain10]
+    - rain_24_hr: 24 Hour Rain Current Year Historical Data [rain24]
+    - solar_radiation: Solar Radiation Current Year Historical Data [srad]
+    - standard: Standard Meteorological Current Year Historical Data [stdmet]
+    - supplemental: Supplemental Measurements Current Year Historical Data [supl]
+    - raw_spectral: Raw Spectral Wave Current Year Historical Data [swden]
+    - spectral_alpha1: Spectral Wave Current Year Historical Data (alpha1) [swdir]
+    - spectral_alpha2: Spectral Wave Current Year Historical Data (alpha2) [swdir2]
+    - spectral_r1: Spectral Wave Current Year Historical Data (r1) [swr1]
+    - spectral_r2: Spectral Wave Current Year Historical Data (r2) [swr2]
+    - tide: Tide Current Year Historical Data [wlevel]
 
     """
 
     def __init__(self, timeframe="real_time"):
+        """Initialize NDBC for a specific time frame.
+        
+        Args:
+            timeframe (str): The timeframe for which to pull data. Can be 
+            'real_time', 'historical', 'historical_only', 'current_year_only'. 
 
+        """
         self.timeframe = timeframe
 
 
     def stations(self, station_id=None, closest_cities=True, owners=True):
+        """Pull data for all NDBC stations.
+
+        Args:
+            station_id (str): The id of the station.
+            closest_cities (bool): Joins on the closest cities and states.
+            owners (bool): Joins on the owners of the buoys.
+        
+        Returns:
+            Pandas dataframe of station information.
+        """
 
         df = metadata.buoy_info(closest_cities=closest_cities, owners=owners)
 
@@ -51,7 +70,17 @@ class NDBC:
 
 
     def available_data(self, dataset="standard", station_id=None):
+        """Lists the available data for the given parameters.
 
+        Args:
+            dataset (str): The dataset to pull. Can be a specific dataset or
+            pass "all" to pull all available data.
+            station_id (str): The station_id to return. If None, returns data
+            for all stations.
+        
+        Returns:
+            Pandas dataframe of availble data.
+        """
         if self.timeframe == "historical":
             df_real = real_time.avail_real_time(dataset)
             df_current = current_year.avail_current_year(dataset)
@@ -87,32 +116,19 @@ class NDBC:
         rename_cols=True,
         drop_duplicates=True,
     ):
-        """Get recent data from the NDBC. Most buoys have six different data sources
-        to pull from:
+        """Pull data for a single station.
+        
+        Args:
+            station_id (str): The station_id to for which to pull data. 
+            dataset (str): The dataset to pull.
+            rename_cols (bool): Rename the columns to more readable titles.
+            drop_duplicates (bool): If pulling historical data, there can be
+            duplicate records in the current year and real time datasets. This
+            argument only keeps one
+        
+        Returns:
+            Pandas dataframe of data for the given station.
 
-        - standard: Standard Meteorological Data. [txt]
-        - oceanographic: Oceanographic Data [ocean]
-        - supplemental: Supplemental Measurements Data [supl]
-        - raw_spectral: Raw Spectral Wave Data. [data_spec]
-        - spectral_summary: Spectral Wave Summary Data [spec]
-        - spectral_alpha1: Spectral Wave Data (alpha1) [swdir]
-        - spectral_alpha2: Spectral Wave Data (alpha2) [swdir2]
-        - spectral_r1: Spectral Wave Data (r1) [swr1]
-        - spectral_r2: Spectral Wave Data (r2) [swr2]
-
-
-            Example usage:
-
-                df = ndbc(41013, 'txt')
-
-            Args:
-                buoy (int): buoy id
-                dataset (str): What type of data to query. Possible values are:
-                    'data_spec', 'ocean', 'spec', 'supl', 'swdir', 'swdir2', 'swr1',
-                    'swr2', and 'txt'
-
-            Returns:
-                DataFrame containing the requested data.
         """
 
         m1 = self.df_avail["station_id"] == station_id
