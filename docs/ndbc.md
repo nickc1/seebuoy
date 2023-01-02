@@ -93,7 +93,7 @@ df_avail = ndbc.available_data(station_id="41002")
 df_data = ndbc.get_station("41002")
 ```
 
-The above examples retrieves close to a half million observations. You can view the jupyter notebook for this example [here](https://google.com).
+The above examples retrieves close to a half million observations. You can view the jupyter notebook for this example [here](https://github.com/nickc1/seebuoy/blob/master/examples/historical_data.ipynb).
 
 
 ## Reference
