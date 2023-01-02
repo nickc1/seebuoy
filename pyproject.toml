@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "seebuoy"
-version = "0.2.0"
+version = "0.2.1"
 description = "Remote data access for oceanographic data."
 authors = ["nickc1 <nickcortale@gmail.com>"]
 readme = "README.md"
