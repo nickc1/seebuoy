@@ -3,7 +3,6 @@ from . import metadata
 from . import real_time
 from . import current_year
 from . import historical
-from . import utils
 
 
 class NDBC:
@@ -39,7 +38,7 @@ class NDBC:
 
         Args:
             timeframe (str): The timeframe for which to pull data. Can be
-            'real_time', 'historical', 'historical_only', 'current_year_only'.
+                'real_time', 'historical', 'historical_only', 'current_year_only'.
 
         """
         self.timeframe = timeframe
@@ -71,9 +70,9 @@ class NDBC:
 
         Args:
             dataset (str): The dataset to pull. Can be a specific dataset or
-            pass "all" to pull all available data.
+                pass "all" to pull all available data.
             station_id (str): The station_id to return. If None, returns data
-            for all stations.
+                for all stations.
 
         Returns:
             Pandas dataframe of availble data.
@@ -118,11 +117,11 @@ class NDBC:
 
         Args:
             station_id (str): The station_id to for which to pull data.
-            dataset (str): The dataset to pull.
+                dataset (str): The dataset to pull.
             rename_cols (bool): Rename the columns to more readable titles.
             drop_duplicates (bool): If pulling historical data, there can be
-            duplicate records in the current year and real time datasets. This
-            argument only keeps one
+                duplicate records in the current year and real time datasets. This
+                argument only keeps one
 
         Returns:
             Pandas dataframe of data for the given station.

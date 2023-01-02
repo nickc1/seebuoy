@@ -9,7 +9,7 @@
 
 ---
 
-Seebuoy provides an easy to use python interface to the [National Data Buoy Center](http://www.ndbc.noaa.gov). Easily access real-time data, historical data, and metadata about the buoys.
+Seebuoy provides an easy to use python interface to the [National Data Buoy Center](http://www.ndbc.noaa.gov). Easily access realtime data, historical data, and metadata about buoys, gliders, and ADCPs.
 
 ## Quick Start
 
@@ -41,8 +41,8 @@ df_buoy = ndbc.get_data(station_id)
 
 In addition to this documentation, we also provide standalone jupyter notebooks. You can see them rendered on github:
 
-- [North Carolina Stations](https://google.com): Find all buoys near North Carolina, list all available data, and pull data for a specific buoy.
-- [Historical Data](https://google.com): Get all historical data for the South Hatteras buoy going back to 1973.
+- [North Carolina Stations](https://github.com/nickc1/seebuoy/blob/master/examples/north_carolina_stations.ipynb): Find all buoys near North Carolina, list all available data, and pull data for a specific buoy.
+- [Historical Data](https://github.com/nickc1/seebuoy/blob/master/examples/historical_data.ipynb): Get all historical data for the South Hatteras buoy going back to 1973.
 
 
 
