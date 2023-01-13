@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "seebuoy"
-version = "0.2.1"
+version = "0.2.2"
 description = "Remote data access for oceanographic data."
 authors = ["nickc1 <nickcortale@gmail.com>"]
 readme = "README.md"
 packages = [{include = "seebuoy"}]
 
 [tool.poetry.dependencies]
-python = "^3.9.11"
+python = "^3.8"
 pandas = "^1.1.2"
 requests = "^2.24.0"
 beautifulsoup4 = "^4.9.3"
